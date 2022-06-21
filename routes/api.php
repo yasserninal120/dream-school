@@ -21,7 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('user/login','App\Http\Controllers\Controller@login');
 Route::post('user/create','App\Http\Controllers\Controller@create_user');
 Route::middleware('jwt.auth')->put('user/update/{id}','App\Http\Controllers\Controller@updateUser');
-Route::delete('user/delete/{id}','App\Http\Controllers\Controller@destroyUser');
+Route::middleware('jwt.auth')->delete('user/delete/{id}','App\Http\Controllers\Controller@destroyUser');
 Route::middleware('jwt.auth')->get('/user', function (Request $request) {
     return auth()->user();
 });
