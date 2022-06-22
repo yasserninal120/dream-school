@@ -26,7 +26,7 @@ Route::middleware('jwt.auth')->get('/user', function (Request $request) {
     return auth()->user();
 });
 /////semester route
-Route::middleware('jwt.auth')->get('create/semester','App\Http\Controllers\Controller@createSemester');
+Route::middleware('jwt.auth')->post('create/semester','App\Http\Controllers\Controller@createSemester');
 Route::middleware('jwt.auth')->put('update/semester/{id}','App\Http\Controllers\Controller@UpdateSemester');
 Route::get('view/semesters','App\Http\Controllers\Controller@viewSemesters');
 Route::middleware('jwt.auth')->get('view/semester/{id}','App\Http\Controllers\Controller@viewSemester');
