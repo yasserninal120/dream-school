@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\Samester;
 use App\Models\Student;
 use App\Models\Teacher;
@@ -144,11 +145,8 @@ class Controller extends BaseController
     }
 
     public function viewUsers(){
-        if(auth()->user()->role_id == 1){
             $users = User::all();
             return $this->sendResponse($users->toArray(),'read succesfully');
-        }
-
 
     }
 
