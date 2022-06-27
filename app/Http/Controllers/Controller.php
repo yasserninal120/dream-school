@@ -143,6 +143,15 @@ class Controller extends BaseController
 
     }
 
+    public function viewUsers(){
+        if(auth()->user()->role_id == 1){
+            $users = User::all();
+            return $this->sendResponse($users->toArray(),'read succesfully');
+        }
+
+
+    }
+
 /////////////samestares function
     public function createSemester(Request $request){
         $input = $request->all();
