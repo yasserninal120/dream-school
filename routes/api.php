@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +22,8 @@ Route::post('user/create','App\Http\Controllers\Controller@create_user');
 Route::middleware('jwt.auth')->put('user/update/{id}','App\Http\Controllers\Controller@updateUser');
 Route::middleware('jwt.auth')->delete('user/delete/{id}','App\Http\Controllers\Controller@destroyUser');
 Route::middleware('jwt.auth')->get('/user', function (Request $request) {
-    return (auth()->user());
+    $user = User::all();
+    return ($user);
 });
 /////semester route
 Route::middleware('jwt.auth')->post('create/semester','App\Http\Controllers\Controller@createSemester');
