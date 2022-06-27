@@ -21,7 +21,7 @@ Route::post('user/login','App\Http\Controllers\Controller@login');
 Route::post('user/create','App\Http\Controllers\Controller@create_user');
 Route::middleware('jwt.auth')->put('user/update/{id}','App\Http\Controllers\Controller@updateUser');
 Route::middleware('jwt.auth')->delete('user/delete/{id}','App\Http\Controllers\Controller@destroyUser');
-Route::middleware('jwt.auth')->put('users','App\Http\Controllers\Controller@viewUsers');
+Route::middleware('jwt.auth')->get('users','App\Http\Controllers\Controller@viewUsers');
 Route::middleware('jwt.auth')->get('/user', function (Request $request) {
     return (auth()->user());
 });
