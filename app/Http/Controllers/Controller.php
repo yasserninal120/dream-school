@@ -63,7 +63,6 @@ class Controller extends BaseController
             $extention = $file->getClientOriginalExtension();
             $filename = rand().'.'.$extention;
             $file->move(public_path('images/'),$filename);
-            return response()->json($filename);
             $img = $filename;
         }else{
             return response()->json('image null');
@@ -74,7 +73,7 @@ class Controller extends BaseController
             'email' => $request->get('email'),
             'password' => Hash::make($request->get('password')),
             'role_id' => $request ->get('role'),
-             //'image' => $img,
+             'image' => $img,
         ]);
 
         $user = User::first();
