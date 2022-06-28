@@ -87,7 +87,7 @@ class Controller extends BaseController
 
            $name = $request->file('image')->getClientOriginalName();
            $request->file('image')->store('public/images/');
-           return $name;
+           $creaetUser->image = $name;
 
 
         }
