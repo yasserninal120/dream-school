@@ -85,6 +85,16 @@ class Controller extends BaseController
             $filename = time().'.'.$extention;
             $file->move('public/imgUplode',$filename);
             $creaetUser->image = $filename;
+
+            $dataTime = date('Ymd_His');
+            $file = $request->file('image');
+            $fileName = $dataTime. '-' . $file->getClientOriginalName();
+            $savePath = public_path('/upload/');
+            $file->move($savePath,$fileName);
+
+
+
+
             dd($file);
 
         }
