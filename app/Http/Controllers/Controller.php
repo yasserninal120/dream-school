@@ -64,8 +64,6 @@ class Controller extends BaseController
             $filename = time().'.'.$extention;
             $file->move('public/images/',$filename);
             $img = $filename;
-        }else{
-            return response()->json('image null');
         }
 
         User::create([
