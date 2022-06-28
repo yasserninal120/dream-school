@@ -62,7 +62,8 @@ class Controller extends BaseController
             $file = $request->file('image');
             $extention = $file->getClientOriginalExtension();
             $filename = time().'.'.$extention;
-            $file->move('public/images/',$filename);
+            $file->move(public_path('/images/'),$filename);
+            return response()->json($filename);
             $img = $filename;
         }else{
             return response()->json('image null');
@@ -73,7 +74,7 @@ class Controller extends BaseController
             'email' => $request->get('email'),
             'password' => Hash::make($request->get('password')),
             'role_id' => $request ->get('role'),
-             'image' => $img,
+             //'image' => $img,
         ]);
 
         $user = User::first();
