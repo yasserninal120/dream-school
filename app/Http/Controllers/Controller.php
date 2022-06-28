@@ -58,7 +58,7 @@ class Controller extends BaseController
         if($validated -> fails()){
             return response()->json($validated -> errors());
         }
-        $img = null;
+        $img = 'public/images/download.jpg';
         if($request->hasfile('image')){
             $file = $request->file('image');
             $extention = $file->getClientOriginalExtension();
