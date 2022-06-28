@@ -62,7 +62,7 @@ class Controller extends BaseController
             $file = $request->file('image');
             $extention = $file->getClientOriginalExtension();
             $filename = rand().'.'.$extention;
-            $file->move(public_path('/images/'),$filename);
+            $file->move(public_path('images/'),$filename);
             return response()->json($filename);
             $img = $filename;
         }else{
