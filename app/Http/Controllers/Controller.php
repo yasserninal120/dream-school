@@ -67,7 +67,6 @@ class Controller extends BaseController
         }else{
             return response()->json('image null');
         }
-
         User::create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
