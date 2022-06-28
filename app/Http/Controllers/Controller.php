@@ -52,19 +52,28 @@ class Controller extends BaseController
             'name' => 'required',
             'email' => 'required|unique:users,email',
             'password' => 'required',
-            // 'role_id' =>  'required',
-            // 'role_id' =>  'required|exists:roles,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
 
         ]);
         if($validated -> fails()){
             return response()->json($validated -> errors());
         }
+        if($request->hasfile('image')){
+            $file = $request->file('image');
+            $extention = $file->getClientOriginalExtension();
+            $filename = time().'.'.$extention;
+            $file->move('public/images/',$filename);
+            $img = $filename;
+        }
+
         User::create([
             'name' => $request->get('name'),
             'email' => $request->get('email'),
             'password' => Hash::make($request->get('password')),
             'role_id' => $request ->get('role'),
+             'image' => $img,
         ]);
+
         $user = User::first();
         $token =  JWTAuth::fromUser($user);
       //// add student to student table
