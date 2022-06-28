@@ -86,7 +86,8 @@ class Controller extends BaseController
             // $file->move('public/imgUplode',$filename);
 
            $name = $request->file('image')->getClientOriginalName();
-           $request->file('image')->store('public/images/');
+        $f=    $request->file('image')->store('public/images/');
+        dd($f);
            $creaetUser->image = $name;
 
 
