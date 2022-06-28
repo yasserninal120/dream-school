@@ -92,8 +92,6 @@ class Controller extends BaseController
 
 
 
-
-
         }
         $creaetUser->save();
 
