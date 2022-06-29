@@ -87,7 +87,7 @@ class Controller extends BaseController
             $dataTime = date('Ymd_His');
                 $file = $request->file('Excel');
                 $fileName = $dataTime. '-' . $file->getClientOriginalName();
-                $savePath = public_path('/upload');
+                $savePath = public_path('/upload/');
                 $file->move($savePath,$fileName);
 
             // return["resulte" => $file];
