@@ -82,10 +82,13 @@ class Controller extends BaseController
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('image')){
-              $file = $request->file('image');
-            $extention = $file->getClientOriginalExtension();
-            $filename = time().'.'.$extention;
-            $file->store('../storage/app/images/'.$filename);
+            //   $file = $request->file('image');
+            // $extention = $file->getClientOriginalExtension();
+            // $filename = time().'.'.$extention;
+            // $file->store('../storage/app/images/'.$filename);
+            $image = $request->file('image');
+                $filename = time() . '.' . $image->getClientOriginalExtension();
+                $location = public_path('image/' . $filename);
 
             // $name = $request->file('image')->getClientOriginalName();
             //  $request->file('image')->store('public');
@@ -100,9 +103,9 @@ class Controller extends BaseController
 
 
 
-            return["resulte" => $file];
+            return["resulte" => $location];
 
-            $creaetUser->image = $file;
+            $creaetUser->image = $filename;
         }
         $creaetUser->save();
 
