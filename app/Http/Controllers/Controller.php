@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\teacherSamester;
 use App\Models\User;
+use Carbon\Carbon;
 // use GuzzleHttp\Psr7\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -21,7 +22,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth as FacadesJWTAuth;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Tymon\JWTAuth\Exceptions\JWTException;
+// use App\Http\Controllers\Storage;
 
 class Controller extends BaseController
 {
@@ -82,15 +85,39 @@ class Controller extends BaseController
         if($request->hasfile('image')){
             $file = $request->file('image');
             $extention = $file->getClientOriginalExtension();
-            $filename = time().'.'.$extention;
-            $file->move('/storage/app/images/'.$filename);
+            // $filename = time().'.'.$extention;
+            // $file->move('/storage/app/images/'.$filename);
 
             // $name = $request->file('image')->getClientOriginalName();
             //  $request->file('image')->store('public');
             //     return "Stor Sucssece";
 
+            $dir ="test/";
+            $imagName = \Carbon\Carbon::now()->toDateString()."-". uniqid() .".". $extention;
+            if(!Storage::disk('public')->Storage::exists($dir)){
+                 Storage::disk('public')->makeDirectory($dir);
+            }
+            Storage::disk('public')->put($dir.$imagName,file_get_contents($file));
 
-           dd($filename);
+
+            dd($imagName);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
