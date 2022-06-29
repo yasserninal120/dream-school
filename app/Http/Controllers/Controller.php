@@ -81,7 +81,7 @@ class Controller extends BaseController
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
-           if($request->hasfile('Excel')){
+           if($request->hasfile('image')){
             //   $file = $request->file('image');
             // $extention = $file->getClientOriginalExtension();
             // $filename = time().'.'.$extention;
@@ -101,7 +101,7 @@ class Controller extends BaseController
             // }
             // Storage::disk('public')->put($dir.$imagName,file_get_contents($file));
             $dataTime = date('Ymd_His');
-                $file = $request->file('Excel');
+                $file = $request->file('image');
                 $fileName = $dataTime. '-' . $file->getClientOriginalName();
                 $savePath = public_path('/upload/');
                 $file->move($savePath,$fileName);
