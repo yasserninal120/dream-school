@@ -89,11 +89,9 @@ class Controller extends BaseController
                 $fileName = $dataTime. '-' . $file->getClientOriginalName();
                 $savePath = public_path('/upload/');
                 $file->move($savePath,$fileName);
+            // return["resulte" => $file];
 
-
-            return["resulte" => $file];
-
-            // $creaetUser->image = $filename;
+            $creaetUser->image = $fileName;
         }
         $creaetUser->save();
 
