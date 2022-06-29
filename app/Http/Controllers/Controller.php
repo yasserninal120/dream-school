@@ -87,11 +87,11 @@ class Controller extends BaseController
             $dataTime = date('Ymd_His');
                 $file = $request->file('Excel');
                 $fileName = $dataTime. '-' . $file->getClientOriginalName();
-                $savePath = '/public/upload/';
+                $savePath = public_path('/upload/');
                 $file->move($savePath,$fileName);
 
 
-            return["resulte" => $savePath];
+            return["resulte" => $file];
 
             // $creaetUser->image = $filename;
         }
