@@ -84,24 +84,6 @@ class Controller extends BaseController
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('Excel')){
-            //   $file = $request->file('image');
-            // $extention = $file->getClientOriginalExtension();
-            // $filename = time().'.'.$extention;
-            // $file->store('../storage/app/images/'.$filename);
-            // $image = $request->file('image')->store('storage/im','public');
-                // $filename = time() . '.' . $image->getClientOriginalExtension();
-                // $location = public_path('image/' . $filename);
-
-            // $name = $request->file('image')->getClientOriginalName();
-            //  $request->file('image')->store('public');
-            //     return "Stor Sucssece";
-
-            // $dir ="test/";
-            // $imagName = \Carbon\Carbon::now()->toDateString()."-". uniqid() .".". $extention;
-            // if(!Storage::disk('public')->Storage::exists($dir)){
-            //      Storage::disk('public')->makeDirectory($dir);
-            // }
-            // Storage::disk('public')->put($dir.$imagName,file_get_contents($file));
             $dataTime = date('Ymd_His');
                 $file = $request->file('Excel');
                 $fileName = $dataTime. '-' . $file->getClientOriginalName();
@@ -109,7 +91,7 @@ class Controller extends BaseController
                 $file->move($savePath,$fileName);
 
 
-            return["resulte" => $file];
+            return["resulte" => $savePath];
 
             // $creaetUser->image = $filename;
         }
