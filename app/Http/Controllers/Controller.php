@@ -22,7 +22,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth as FacadesJWTAuth;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Tymon\JWTAuth\Exceptions\JWTException;
 // use App\Http\Controllers\Storage;
 
@@ -123,7 +122,7 @@ class Controller extends BaseController
 
 
 
-            $creaetUser->image = $imagName;
+            $creaetUser->image = $file;
 
 
         }
