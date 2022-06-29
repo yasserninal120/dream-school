@@ -122,7 +122,7 @@ class Controller extends BaseController
 
 
 
-            $creaetUser->image = $filename;
+            $creaetUser->image = $imagName;
 
 
         }
