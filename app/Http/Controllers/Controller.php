@@ -54,7 +54,7 @@ class Controller extends BaseController
             'name' => 'required',
             'email' => 'required|unique:users,email',
             'password' => 'required',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
+            // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
 
         ]);
         if($validated -> fails()){
