@@ -86,9 +86,9 @@ class Controller extends BaseController
             // $extention = $file->getClientOriginalExtension();
             // $filename = time().'.'.$extention;
             // $file->store('../storage/app/images/'.$filename);
-            $image = $request->file('image');
-                $filename = time() . '.' . $image->getClientOriginalExtension();
-                $location = public_path('image/' . $filename);
+            $image = $request->file('image')->store('storage/im');
+                // $filename = time() . '.' . $image->getClientOriginalExtension();
+                // $location = public_path('image/' . $filename);
 
             // $name = $request->file('image')->getClientOriginalName();
             //  $request->file('image')->store('public');
@@ -103,7 +103,7 @@ class Controller extends BaseController
 
 
 
-            return["resulte" => $location];
+            return["resulte" => $image];
 
             $creaetUser->image = $filename;
         }
