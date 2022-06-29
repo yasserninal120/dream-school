@@ -55,7 +55,7 @@ class Controller extends BaseController
             'email' => 'required|unique:users,email',
             'password' => 'required',
             // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
-
+            'image' => 'nullable',
         ]);
         if($validated -> fails()){
             return response()->json($validated -> errors());
