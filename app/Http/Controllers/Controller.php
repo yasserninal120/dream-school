@@ -83,8 +83,8 @@ class Controller extends BaseController
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
         if($request->hasfile('image')){
-            $file = $request->file('image');
-            $extention = $file->getClientOriginalExtension();
+            $file = $request->file('image')->store('images');
+            // $extention = $file->getClientOriginalExtension();
             // $filename = time().'.'.$extention;
             // $file->move('/storage/app/images/'.$filename);
 
@@ -92,15 +92,16 @@ class Controller extends BaseController
             //  $request->file('image')->store('public');
             //     return "Stor Sucssece";
 
-            $dir ="test/";
-            $imagName = \Carbon\Carbon::now()->toDateString()."-". uniqid() .".". $extention;
-            if(!Storage::disk('public')->Storage::exists($dir)){
-                 Storage::disk('public')->makeDirectory($dir);
-            }
-            Storage::disk('public')->put($dir.$imagName,file_get_contents($file));
+            // $dir ="test/";
+            // $imagName = \Carbon\Carbon::now()->toDateString()."-". uniqid() .".". $extention;
+            // if(!Storage::disk('public')->Storage::exists($dir)){
+            //      Storage::disk('public')->makeDirectory($dir);
+            // }
+            // Storage::disk('public')->put($dir.$imagName,file_get_contents($file));
 
 
-            return($imagName);
+
+            return["resulte" => $file];
 
 
 
