@@ -93,6 +93,7 @@ class Controller extends BaseController
             // return["resulte" => $file];
 
             $creaetUser->image = $file;
+                echo $file;
         }
         $creaetUser->save();
 
