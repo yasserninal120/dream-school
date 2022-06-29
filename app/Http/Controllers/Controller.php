@@ -81,8 +81,10 @@ class Controller extends BaseController
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
-        if($request->hasfile('image')){
-            $file = $request->file('image')->store('images');
+        $creaetUser->image = $request->get('image');
+
+        //    if($request->hasfile('image')){
+            // $file = $request->file('image')->store('images');
             // $extention = $file->getClientOriginalExtension();
             // $filename = time().'.'.$extention;
             // $file->move('/storage/app/images/'.$filename);
@@ -100,32 +102,10 @@ class Controller extends BaseController
 
 
 
-            return["resulte" => $file];
+            // return["resulte" => $file];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            $creaetUser->image = $file;
-
-
-        }
+            // $creaetUser->image = $file;
+        // }
         $creaetUser->save();
 
 
