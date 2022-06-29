@@ -90,7 +90,7 @@ class Controller extends BaseController
             //     return "Stor Sucssece";
 
 
-           dd($file);
+           dd($filename);
 
 
 
