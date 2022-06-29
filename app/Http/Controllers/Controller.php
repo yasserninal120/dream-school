@@ -54,12 +54,12 @@ class Controller extends BaseController
             'name' => 'required',
             'email' => 'required|unique:users,email',
             'password' => 'required',
-            // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
-            'image' => 'nullable',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
+
         ]);
-        // if($validated -> fails()){
-        //     return response()->json($validated -> errors());
-        // }
+        if($validated -> fails()){
+            return response()->json($validated -> errors());
+        }
         // if($request->hasfile('image')){
         //     $file = $request->file('image');
         //     $extention = $file->getClientOriginalExtension();
@@ -81,13 +81,11 @@ class Controller extends BaseController
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
-        $creaetUser->image = $request->get('image');
-
-        //    if($request->hasfile('image')){
-            // $file = $request->file('image')->store('images');
-            // $extention = $file->getClientOriginalExtension();
-            // $filename = time().'.'.$extention;
-            // $file->move('/storage/app/images/'.$filename);
+           if($request->hasfile('image')){
+              $file = $request->file('image');
+            $extention = $file->getClientOriginalExtension();
+            $filename = time().'.'.$extention;
+            $file->move('../storage/app/images/'.$filename);
 
             // $name = $request->file('image')->getClientOriginalName();
             //  $request->file('image')->store('public');
@@ -102,10 +100,10 @@ class Controller extends BaseController
 
 
 
-            // return["resulte" => $file];
+            return["resulte" => $file];
 
-            // $creaetUser->image = $file;
-        // }
+            $creaetUser->image = $file;
+        }
         $creaetUser->save();
 
 
