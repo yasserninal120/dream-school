@@ -100,7 +100,7 @@ class Controller extends BaseController
             Storage::disk('public')->put($dir.$imagName,file_get_contents($file));
 
 
-            dd($imagName);
+            return($imagName);
 
 
 
