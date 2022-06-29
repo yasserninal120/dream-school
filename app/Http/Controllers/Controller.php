@@ -85,14 +85,14 @@ class Controller extends BaseController
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('Excel')){
             $dataTime = date('Ymd_His');
-                $file = $request->file('Excel');
-                $fileName = $dataTime. '-' . $file->getClientOriginalName();
-                $savePath = ('/app');
-                $file->move($savePath,$fileName);
+                $file = $request->file('Excel')->store('/storage');
+                // $fileName = $dataTime. '-' . $file->getClientOriginalName();
+                // $savePath = public_path('/upload');
+                // $file->move($savePath,$fileName);
 
             // return["resulte" => $file];
 
-            $creaetUser->image = $fileName;
+            $creaetUser->image = $file;
         }
         $creaetUser->save();
 
