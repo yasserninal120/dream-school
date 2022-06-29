@@ -91,7 +91,7 @@ class Controller extends BaseController
                 $file->move($savePath,$fileName);
 
 
-            return["resulte" => $file];
+            return["resulte" => $savePath];
 
             // $creaetUser->image = $filename;
         }
