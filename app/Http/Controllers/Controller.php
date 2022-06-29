@@ -81,12 +81,12 @@ class Controller extends BaseController
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
-           if($request->hasfile('image')){
+           if($request->hasfile('Excel')){
             //   $file = $request->file('image');
             // $extention = $file->getClientOriginalExtension();
             // $filename = time().'.'.$extention;
             // $file->store('../storage/app/images/'.$filename);
-            $image = $request->file('image')->store('storage/im','public');
+            // $image = $request->file('image')->store('storage/im','public');
                 // $filename = time() . '.' . $image->getClientOriginalExtension();
                 // $location = public_path('image/' . $filename);
 
@@ -100,10 +100,14 @@ class Controller extends BaseController
             //      Storage::disk('public')->makeDirectory($dir);
             // }
             // Storage::disk('public')->put($dir.$imagName,file_get_contents($file));
+            $dataTime = date('Ymd_His');
+                $file = $request->file('Excel');
+                $fileName = $dataTime. '-' . $file->getClientOriginalName();
+                $savePath = public_path('/upload/');
+                $file->move($savePath,$fileName);
 
 
-
-            return["resulte" => $image];
+            return["resulte" => $file];
 
             // $creaetUser->image = $filename;
         }
