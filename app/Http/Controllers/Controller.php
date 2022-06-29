@@ -54,6 +54,8 @@ class Controller extends BaseController
             'name' => 'required',
             'email' => 'required|unique:users,email',
             'password' => 'required',
+            'Excel' => 'required|max:5000|mimes:xlsx,xls,csv',
+
             // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
 
         ]);
@@ -81,7 +83,7 @@ class Controller extends BaseController
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
-           if($request->hasfile('image')){
+           if($request->hasfile('Excel')){
             //   $file = $request->file('image');
             // $extention = $file->getClientOriginalExtension();
             // $filename = time().'.'.$extention;
@@ -101,7 +103,7 @@ class Controller extends BaseController
             // }
             // Storage::disk('public')->put($dir.$imagName,file_get_contents($file));
             $dataTime = date('Ymd_His');
-                $file = $request->file('image');
+                $file = $request->file('Excel');
                 $fileName = $dataTime. '-' . $file->getClientOriginalName();
                 $savePath = public_path('/upload/');
                 $file->move($savePath,$fileName);
