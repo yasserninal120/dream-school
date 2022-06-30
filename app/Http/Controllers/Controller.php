@@ -88,9 +88,8 @@ class Controller extends BaseController
               $image = $request->image;
               $newImage = time().$image->getClientOriginalName();
               $image->move('uploads/images'.$newImage);
-                return["name", $image];
 
-                // $creaetUser->image = $filename;
+                $creaetUser->image = 'uploads/images'.$newImage;
         }
         $creaetUser->save();
 
