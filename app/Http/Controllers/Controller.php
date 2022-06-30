@@ -86,7 +86,7 @@ class Controller extends BaseController
            if($request->hasfile('image')){
             $imgUrl = $request ->file('image')->store('storage');
 
-            return "ok9";
+            return "ok12";
             // $creaetUser->image = $imageName;
         }
         $creaetUser->save();
