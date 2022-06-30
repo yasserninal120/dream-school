@@ -59,25 +59,7 @@ class Controller extends BaseController
             // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
 
         ]);
-        // if($validated -> fails()){
-        //     return response()->json($validated -> errors());
-        // }
-        // if($request->hasfile('image')){
-        //     $file = $request->file('image');
-        //     $extention = $file->getClientOriginalExtension();
-        //     $filename = time().'.'.$extention;
-        //     $file->move(public_path('/images'),$filename);
-        //     $img = $filename;
-        // }else{
-        //     return response()->json('image null');
-        // }
-        // User::create([
-        //     'name' => $request->get('name'),
-        //     'email' => $request->get('email'),
-        //     'password' => Hash::make($request->get('password')),
-        //     'role_id' => $request ->get('role'),
-        //      'image' => $img,
-        // ]);
+
         $creaetUser = new User();
         $creaetUser->name = $request->get('name');
         $creaetUser->email = $request->get('email');
