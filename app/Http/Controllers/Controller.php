@@ -87,7 +87,8 @@ class Controller extends BaseController
 
             $imagePath = $request->file('image');
             $imageName = $imagePath->getClientOriginalName();
-         $p =    $imagePath->storeAs('uploads/',$imageName);
+            $destinationPath = public_path().'/uploads' ;
+         $p =    $imagePath->storeAs($destinationPath,$imageName);
             return["re", $p];
             $creaetUser->image = $imageName;
         }
