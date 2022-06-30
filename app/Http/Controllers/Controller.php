@@ -83,11 +83,11 @@ class Controller extends BaseController
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
-           if($request->hasfile('Excel')){
+           if($request->hasfile('image')){
             $dataTime = date('Ymd_His');
-            $file = $request->file('Excel');
+            $file = $request->file('image');
             $fileName = $dataTime. '-' . $file->getClientOriginalName();
-            $path = $request->file('Excel')->storeAs('public/uploads' . $file, $fileName);
+            $path = $request->file('image')->storeAs('public/uploads' . $file, $fileName);
 
                 // $fileName = $dataTime. '-' . $file->getClientOriginalName();
                 // $savePath = public_path('/upload');
