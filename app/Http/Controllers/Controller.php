@@ -97,7 +97,7 @@ class Controller extends BaseController
                 $file = $request->file('image');
                 $extention = $file->getClientOriginalExtension();
                 $filename = time().'.'.$extention;
-                $file->move('public/images/',$filename);
+                $file->move('public/images/'.$filename);
                 $creaetUser->image = $filename;
                 echo $file;
         }
