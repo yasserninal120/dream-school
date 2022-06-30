@@ -89,7 +89,7 @@ class Controller extends BaseController
             $file_name = time().$file_extension;
             $path = 'images';
             $request->image -> move($path,$file_name);
-            return "succsses"
+            return "succsses";
             // $creaetUser->image = $imageName;
         }
         $creaetUser->save();
