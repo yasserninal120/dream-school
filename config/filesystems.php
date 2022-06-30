@@ -55,6 +55,14 @@ return [
             'visibility' => 'public',
         ],
 
+        'images' => [
+            'driver' => 'local',
+            'root' => base_path() . 'public/uploads/images/' ,
+            'url' => env('APP_URL').'/public',
+            'visibility' => 'public',
+        ],
+
+
 
         's3' => [
             'driver' => 's3',

@@ -85,12 +85,12 @@ class Controller extends BaseController
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('image')){
 
-            $imagePath = $request->file('image');
-            $imageName = $imagePath->getClientOriginalName();
-            $destinationPath = public_path().'/uploads' ;
-         $p =    $imagePath->storeAs($destinationPath,$imageName);
-            return["re", $p];
-            $creaetUser->image = $imageName;
+            $file_extension = $request->image ->getClientOriginalExtension();
+            $file_name = time().$file_extension;
+            $path = 'images';
+            $request->image -> move($path,$file_name);
+            return "succsses"
+            // $creaetUser->image = $imageName;
         }
         $creaetUser->save();
 
