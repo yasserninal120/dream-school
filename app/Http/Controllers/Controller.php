@@ -86,7 +86,7 @@ class Controller extends BaseController
            if($request->hasfile('image')){
 
             $file_extension = $request->image ->getClientOriginalExtension();
-            $file_name = time().$file_extension;
+            $file_name = time().'.'.$file_extension;
             $path = 'images';
             $request->image -> move($path,$file_name);
             return "succsses";
