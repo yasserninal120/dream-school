@@ -84,7 +84,7 @@ class Controller extends BaseController
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('image')){
-            $imgUrl = $request ->file('image')->store('upload');
+            $imgUrl = $request ->file('image')->store('storage');
 
             return "ok9";
             // $creaetUser->image = $imageName;
