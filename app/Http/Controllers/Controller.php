@@ -87,8 +87,8 @@ class Controller extends BaseController
             $dataTime = date('Ymd_His');
             $file = $request->file('image');
             $fileName = $dataTime. '-' . $file->getClientOriginalName();
-            $path = $request->file('image')->storeAs('public' . $file, $fileName);
-
+            // $path = $request->file('image')->storeAs('public' . $file, $fileName);
+            $path = $request->image->store();
                 // $fileName = $dataTime. '-' . $file->getClientOriginalName();
                 // $savePath = public_path('/upload');
                 // $file->move($savePath,$fileName);
