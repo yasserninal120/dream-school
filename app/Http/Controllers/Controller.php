@@ -93,8 +93,8 @@ class Controller extends BaseController
                 // $savePath = public_path('/upload');
                 // $file->move($savePath,$fileName);
 
-                dd($path);
-            // return["resulte" => $path];
+                // dd($path);
+            return["resulte" => $path];
 
             $creaetUser->image = $file;
                 echo $file;
