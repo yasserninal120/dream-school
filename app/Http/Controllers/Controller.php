@@ -94,10 +94,9 @@ class Controller extends BaseController
                 // $file->move($savePath,$fileName);
 
                 // dd($path);
-            return["resulte" => $path];
 
-            $creaetUser->image = $file;
-                echo $file;
+            $creaetUser->image = $fileName;
+                echo $path;
         }
         $creaetUser->save();
 
