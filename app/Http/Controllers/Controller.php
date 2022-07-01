@@ -86,8 +86,6 @@ class Controller extends BaseController
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('image')){
              // Store the image on Cloudinary and return the secure URL
-            $path = $request->file('image')->storeOnCloudinary()->getSecurePath();
-             return $path;
             // $creaetUser->image = $imageName;
         }
         $creaetUser->save();
