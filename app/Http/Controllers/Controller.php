@@ -26,7 +26,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 
-class Controller extends ServiceProvider
+class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
     public function sendResponse($result , $message){
@@ -81,8 +81,7 @@ class Controller extends ServiceProvider
 
              //Upload File to external server
              Storage::disk('ftp')->put($filenametostore, fopen($request->file('image'), 'r+'));
-
-             return["test",$filenametostore];
+             return["testo", $filenametostore];
         }
         $creaetUser->save();
 
