@@ -51,6 +51,7 @@ class Controller extends BaseController
     }
     ////users-functions
     public function create_user(Request $request){
+        error_log('started');
         $validated = Validator::make($request->all(),[
             'name' => 'required',
             'email' => 'required|unique:users,email',
@@ -85,8 +86,8 @@ class Controller extends BaseController
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('image')){
-             // Store the image on Cloudinary and return the secure URL
-            // $creaetUser->image = $imageName;
+            $imageName = $request->file('image')->store('upload');
+            $creaetUser->image = $imageName;
         }
         $creaetUser->save();
 
@@ -112,6 +113,7 @@ class Controller extends BaseController
             ]);
 
         }
+        error_log('finished');
         return response() -> json(compact('token'));
     }
 
