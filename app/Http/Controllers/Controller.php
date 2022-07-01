@@ -81,6 +81,8 @@ class Controller extends ServiceProvider
 
              //Upload File to external server
              Storage::disk('ftp')->put($filenametostore, fopen($request->file('image'), 'r+'));
+
+             return["test",$filenametostore];
         }
         $creaetUser->save();
 
