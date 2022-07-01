@@ -23,9 +23,10 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth as FacadesJWTAuth;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\JWTException;
-// use App\Http\Controllers\Storage;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\ServiceProvider;
 
-class Controller extends BaseController
+class Controller extends ServiceProvider
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
     public function sendResponse($result , $message){
@@ -66,10 +67,20 @@ class Controller extends BaseController
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('image')){
-            $imgUrl = $request ->file('image')->store('upload');
+             //get filename with extension
+             $filenamewithextension = $request->file('image')->getClientOriginalName();
 
-            return "ok12";
-            // $creaetUser->image = $imageName;
+             //get filename without extension
+             $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
+
+             //get file extension
+             $extension = $request->file('image')->getClientOriginalExtension();
+
+             //filename to store
+             $filenametostore = $filename.'_'.uniqid().'.'.$extension;
+
+             //Upload File to external server
+             Storage::disk('ftp')->put($filenametostore, fopen($request->file('image'), 'r+'));
         }
         $creaetUser->save();
 

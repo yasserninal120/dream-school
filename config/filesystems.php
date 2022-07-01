@@ -42,7 +42,13 @@ return [
             'visibility' => 'public',
 
 
-
+            'ftp' => [
+                'driver' => 'ftp',
+                'host' => env('FTP_HOST'),
+                'username' => env('FTP_USERNAME'),
+                'password' => env('FTP_PASSWORD'),
+                'root' => '/public/uploads' // for example: /public_html/images
+            ],
 
 
 
