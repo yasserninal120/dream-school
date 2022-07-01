@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth as FacadesJWTAuth;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use JD\Cloudder\Cloudder;
 // use App\Http\Controllers\Storage;
 
 class Controller extends BaseController
@@ -84,13 +85,9 @@ class Controller extends BaseController
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('image')){
-            $file = $request->file('image');
-            $extention = $file->getClientOriginalExtension();
-            $filename = time().'.'.$extention;
-            $path = $request->file('image')->move(base_path().'/public/uploads/',$filename);
-
-            return["name",$path];
-            return "ok";
+             // Store the image on Cloudinary and return the secure URL
+            $path = $request->file('image')->storeOnCloudinary()->getSecurePath();
+             return $path;
             // $creaetUser->image = $imageName;
         }
         $creaetUser->save();
