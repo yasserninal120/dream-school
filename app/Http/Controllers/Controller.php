@@ -23,8 +23,7 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth as FacadesJWTAuth;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\JWTException;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\ServiceProvider;
+// use App\Http\Controllers\Storage;
 
 class Controller extends BaseController
 {
@@ -60,28 +59,38 @@ class Controller extends BaseController
             // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
 
         ]);
-
+        // if($validated -> fails()){
+        //     return response()->json($validated -> errors());
+        // }
+        // if($request->hasfile('image')){
+        //     $file = $request->file('image');
+        //     $extention = $file->getClientOriginalExtension();
+        //     $filename = time().'.'.$extention;
+        //     $file->move(public_path('/images'),$filename);
+        //     $img = $filename;
+        // }else{
+        //     return response()->json('image null');
+        // }
+        // User::create([
+        //     'name' => $request->get('name'),
+        //     'email' => $request->get('email'),
+        //     'password' => Hash::make($request->get('password')),
+        //     'role_id' => $request ->get('role'),
+        //      'image' => $img,
+        // ]);
         $creaetUser = new User();
         $creaetUser->name = $request->get('name');
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
            if($request->hasfile('image')){
-             //get filename with extension
-             $filenamewithextension = $request->file('image')->getClientOriginalName();
+            $file = $request->file('image');
+            $extention = $file->getClientOriginalExtension();
+            $filename = time().'.'.$extention;
+            $path = $request->file('image')->move(base_path().'/public/uploads/',$filename);
 
-             //get filename without extension
-             $filename = pathinfo($filenamewithextension, PATHINFO_FILENAME);
-
-             //get file extension
-             $extension = $request->file('image')->getClientOriginalExtension();
-
-             //filename to store
-             $filenametostore = $filename.'_'.uniqid().'.'.$extension;
-
-             //Upload File to external server
-             Storage::disk('ftp')->put($filenametostore, fopen($request->file('image'), 'r+'));
-             return["testo", $filenametostore];
+            return "ok";
+            // $creaetUser->image = $imageName;
         }
         $creaetUser->save();
 
