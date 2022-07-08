@@ -103,7 +103,7 @@ class Controller extends BaseController
         if($role_id == 3){
             Student::create([
                 'user_id' => $user -> id,
-                'samester_id' => 1 ,
+                // 'samester_id' => 1 ,
             ]);
         }
         //// add teacher to teacher table
@@ -230,7 +230,7 @@ class Controller extends BaseController
         }
     }
     public function viewSemester($id){
-        $semestare = Samester::where('id','=',$id)->get();
+        $semestare = Samester::where('id','=',$id)->with('student')->get();
         return $this->sendResponse($semestare->toArray(),'read succesfully');
     }
 
