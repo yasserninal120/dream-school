@@ -231,8 +231,9 @@ class Controller extends BaseController
     }
     public function viewSemester($id){
         $semestare = Samester::find($id);
+        $st = $semestare->student;
 
-        return $this->sendResponse($semestare->toArray(),'read succesfully');
+        return $this->sendResponse($st->toArray(),'read succesfully');
     }
 
     public function addTeacherTosemaster($samester_id , $teacher_id){
