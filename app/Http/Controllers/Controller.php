@@ -230,7 +230,7 @@ class Controller extends BaseController
         }
     }
     public function viewSemester($id){
-      $st =  Student::with('user')->get();
+      $st =  Student::where('samester_id','=',$id)->with('user')->get();
         // $semestare = Samester::find($id);
         // $st = $semestare->student;
 
