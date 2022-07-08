@@ -19,10 +19,16 @@ use Illuminate\Support\Facades\Route;
 //user route
 Route::post('user/login','App\Http\Controllers\Controller@login');
 Route::post('user/create','App\Http\Controllers\Controller@create_user');
+// Route::middleware(['jwt.auth'])->group(function () {
+//     Route::get('users/{id}', function ($id) {
+
+//     });
+// });
 Route::middleware('jwt.auth')->put('user/update/{id}','App\Http\Controllers\Controller@updateUser');
 Route::middleware('jwt.auth')->delete('user/delete/{id}','App\Http\Controllers\Controller@destroyUser');
 Route::middleware('jwt.auth')->get('users','App\Http\Controllers\Controller@viewUsers');
-Route::middleware('jwt.auth')->get('/user', function (Request $request) {
+Route::middleware('jwt.auth')->get('test','App\Http\Controllers\Controller@test');
+Route::middleware('jwt.auth')->get('user', function (Request $request) {
     return (auth()->user());
 });
 /////semester route

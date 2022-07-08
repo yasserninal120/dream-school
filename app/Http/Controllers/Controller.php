@@ -225,9 +225,6 @@ class Controller extends BaseController
             $id = auth()->user()->id;
             $t = User::find($id);
             $t -> teacher->semester;
-            // foreach($t -> teacher->semester as $t){
-            //     $t->name;
-            // }
             return $this->sendResponse($t->toArray(),'read succesfully');
 
         }
@@ -243,6 +240,10 @@ class Controller extends BaseController
         return $this->sendResponse($samester->toArray(),'add succesfully');
     }
 
+    public function test(){
+        $Users = User::with('role')->get();
+        return $this->sendResponse($Users->toArray(),'read succesfully');
+    }
 
 
 }
