@@ -230,8 +230,9 @@ class Controller extends BaseController
         }
     }
     public function viewSemester($id){
-        $semestare = Samester::find($id);
-        $st = $semestare->student;
+      $st =  Student::all();
+        // $semestare = Samester::find($id);
+        // $st = $semestare->student;
 
         return $this->sendResponse($st->toArray(),'read succesfully');
     }
