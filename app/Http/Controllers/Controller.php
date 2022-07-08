@@ -230,7 +230,7 @@ class Controller extends BaseController
         }
     }
     public function viewSemester($id){
-        $semestare = Samester::where('id','=',$id)->with('student')->get();
+        $semestare = Samester::where('id','=',$id)->student->get();
         return $this->sendResponse($semestare->toArray(),'read succesfully');
     }
 
