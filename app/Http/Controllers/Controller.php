@@ -56,7 +56,6 @@ class Controller extends BaseController
             'name' => 'required',
             'email' => 'required|unique:users,email',
             'password' => 'required',
-            'Excel' => 'required|max:5000|mimes:xlsx,xls,csv',
 
             // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
 
@@ -90,7 +89,6 @@ class Controller extends BaseController
             $creaetUser->image = $imageName;
         }
         $creaetUser->save();
-
 
         $user = User::first();
         $token =  JWTAuth::fromUser($user);
@@ -218,7 +216,7 @@ class Controller extends BaseController
 
     public function viewSemesters(){
         if(auth()->user()->role_id == 1){
-            $semestare = Samester::all();
+            $semestare = Samester::where('id' , '!=',1)->get();
             return $this->sendResponse($semestare->toArray(),'read succesfully');
         }
         if(auth()->user()->role_id == 2){
@@ -246,6 +244,12 @@ class Controller extends BaseController
     public function test(){
         $Users = User::with('role')->get();
         return $this->sendResponse($Users->toArray(),'read succesfully');
+    }
+    public function acountDetiles(){
+        $id = auth()->user()->id;
+    $user_login = User::where('id', '=', $id)->with('role')->get();
+    return $this->sendResponse($user_login->toArray(),'read succesfully');
+
     }
 
 

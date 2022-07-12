@@ -28,9 +28,7 @@ Route::middleware('jwt.auth')->put('user/update/{id}','App\Http\Controllers\Cont
 Route::middleware('jwt.auth')->delete('user/delete/{id}','App\Http\Controllers\Controller@destroyUser');
 Route::middleware('jwt.auth')->get('users','App\Http\Controllers\Controller@viewUsers');
 Route::middleware('jwt.auth')->get('test','App\Http\Controllers\Controller@test');
-Route::middleware('jwt.auth')->get('user', function (Request $request) {
-    return (auth()->user());
-});
+Route::middleware('jwt.auth')->get('use','App\Http\Controllers\Controller@acountDetiles');
 /////semester route
 Route::middleware('jwt.auth')->post('create/semester','App\Http\Controllers\Controller@createSemester');
 Route::middleware('jwt.auth')->put('update/semester/{id}','App\Http\Controllers\Controller@UpdateSemester');
@@ -38,6 +36,24 @@ Route::get('view/semesters','App\Http\Controllers\Controller@viewSemesters');
 Route::middleware('jwt.auth')->get('view/semester/{id}','App\Http\Controllers\Controller@viewSemester');
 Route::middleware('jwt.auth')->delete('delete/semester/{id}','App\Http\Controllers\Controller@destroySemester');
 Route::middleware('jwt.auth')->post('addTeacher/semester/{sId}/{tId}','App\Http\Controllers\Controller@addTeacherTosemaster');
+
+
+Route::middleware(['jwt.auth'])->group(function () {
+    ////post
+
+    Route::get('/posts','App\Http\Controllers\PostController@index');
+    Route::post('/posts','App\Http\Controllers\PostController@store');
+    Route::get('/posts/{id}','App\Http\Controllers\PostController@show');
+    Route::put('/posts/{id}','App\Http\Controllers\PostController@update');
+    Route::delete('/posts/{id}','App\Http\Controllers\PostController@destroy');
+    ///comment
+    Route::get('/posts/{id}/comments','App\Http\Controllers\PostController@index');
+    Route::post('/posts/{id}/comments','App\Http\Controllers\PostController@store');
+    Route::put('/comments/{id}','App\Http\Controllers\PostController@update');
+    Route::put('/comments/{id}','App\Http\Controllers\PostController@destroy');
+    //like
+    Route::get('/posts/{id}/likes','App\Http\Controllers\PostController@likeOrUnlike');
+});
 
 
 
