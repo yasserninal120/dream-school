@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Models\Role;
 use App\Models\Samester;
 use App\Models\Student;
@@ -22,8 +20,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth as FacadesJWTAuth;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use JD\Cloudder\Cloudder;
+use Illuminate\Support\Facades\URL;
 // use App\Http\Controllers\Storage;
 
 class Controller extends BaseController
@@ -56,38 +56,22 @@ class Controller extends BaseController
             'name' => 'required',
             'email' => 'required|unique:users,email',
             'password' => 'required',
-
-            // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:10048',
 
         ]);
-        // if($validated -> fails()){
-        //     return response()->json($validated -> errors());
-        // }
-        // if($request->hasfile('image')){
-        //     $file = $request->file('image');
-        //     $extention = $file->getClientOriginalExtension();
-        //     $filename = time().'.'.$extention;
-        //     $file->move(public_path('/images'),$filename);
-        //     $img = $filename;
-        // }else{
-        //     return response()->json('image null');
-        // }
-        // User::create([
-        //     'name' => $request->get('name'),
-        //     'email' => $request->get('email'),
-        //     'password' => Hash::make($request->get('password')),
-        //     'role_id' => $request ->get('role'),
-        //      'image' => $img,
-        // ]);
+
         $creaetUser = new User();
         $creaetUser->name = $request->get('name');
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
-           if($request->hasfile('image')){
-            $imageName = $request->file('image')->store('upload');
-            $creaetUser->image = $imageName;
+        if($request->hasfile('image')){
+            $url = $request->file('image')->store('image_profile');
+        }else{
+            $url = null;
         }
+        //http://127.0.0.1:8000/storage/image_profile/YORna4xgc4MwQyr6vLogUWIVSiD4PB7YM70xCulY.png
+        $creaetUser->image = $url;
         $creaetUser->save();
 
         $user = User::first();
@@ -120,9 +104,6 @@ class Controller extends BaseController
         $validated = Validator::make($request->all(),[
             'email' => 'required',
             'password' => 'required',
-            // 'role_id' =>  'required',
-            // 'role_id' =>  'required|exists:roles,id',
-
         ]);
 
         if($validated -> fails()){
@@ -154,11 +135,18 @@ class Controller extends BaseController
         if($validated -> fails()){
             return $this->sendError('error validation',$validated -> errors());
         }
+        if($request->hasfile('image')){
+            $url = $request->file('image')->store('image_profile');
+        }else{
+            $url = null;
+        }
+        //http://127.0.0.1:8000/storage/image_profile/YORna4xgc4MwQyr6vLogUWIVSiD4PB7YM70xCulY.png
         $user  = User::find($id);
         $user->name = $input['name'];
         $user->email = $input['email'];
         $user->password = $input['password'];
         $user->role_id = $input['role'];
+        $user->image = $url;
         $user->save();
         return $this->sendResponse($user->toArray(),'Update succesfully');
 
@@ -241,6 +229,19 @@ class Controller extends BaseController
         return $this->sendResponse($samester->toArray(),'add succesfully');
     }
 
+     public function addStudentTosemaseter( $id , Request $request){
+
+        $studetId = explode(",",$request->input('ids')) ;
+        // foreach($studetId as $key => $value){
+        //     $student = Student::find($value['ids']);
+        //     $student->samester_id = $id;
+
+        // }
+        $t =Student::whereIn('id',$studetId)->update(['samester_id' => $id]);
+        // echo "<pre>"; print_r($studetId); die;
+       return response()->json(['true' => 'update Sucsse']);
+
+     }
     public function test(){
         $Users = User::with('role')->get();
         return $this->sendResponse($Users->toArray(),'read succesfully');
@@ -251,6 +252,13 @@ class Controller extends BaseController
     return $this->sendResponse($user_login->toArray(),'read succesfully');
 
     }
+
+    public function getStudent($id){
+        $studetn = Student::orderBy('created_at','desc')->where('samester_id','!=',$id)->with('samester')->with('user')->get();
+        return $this->sendResponse($studetn->toArray(),'read succesfully');
+
+    }
+
 
 
 }

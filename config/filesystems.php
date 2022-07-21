@@ -58,6 +58,17 @@ return [
             // 'url' => env('APP_URL').'/storage',
             // 'visibility' => 'public',
         ],
+
+        'posts' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/posts'),
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+        ],
+
+
+
+
         // 'uploads' => [
         //     'driver' => 'local',
         //     'root'   => public_path(), // previously storage_path();
@@ -90,6 +101,8 @@ return [
     'links' => [
         public_path('storage') => storage_path('app/public'),
         public_path('upload') => storage_path('app/upload'),
+        public_path('image_profile') => storage_path('app/profile'),
+        public_path('image_post') => storage_path('app/profile'),
 
     ],
 

@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use JD\Cloudder\Cloudder;
 use App\Models\post;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 class PostController extends Controller
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
@@ -48,7 +50,11 @@ class PostController extends Controller
     }
     //get all posts
     public function index(){
-        $posts = post::orderBy('created_at','desc')->with('user:id,name,image')->withCount('comments','likes')->get();
+        $posts = post::orderBy('created_at','desc')->with('user')->withCount('comments','likes')
+        ->with('likes',function($like){
+            return $like->where('user_id',auth()->user()->id)
+            ->select('id','user_id','post_id')->get();
+        })->get();
         return $this->sendResponse($posts->toArray(),'Update succesfully');
     }
     //get singel post
@@ -62,9 +68,19 @@ class PostController extends Controller
             'body' => 'required|string'
         ]);
 
+        if($request->input('image')){
+            $image = base64_decode($request->input('image'));
+            $png_url = time().".png";
+             file_put_contents(public_path('/storage/image_post/').$png_url, $image);
+            $url = 'image_post/'.$png_url;
+
+        }else{
+            $url = null;
+        }
         $post = post::create([
             'body' => $attrs['body'],
              'user_id' => auth()->user()->id,
+             'image' => $url,
         ]);
         return $this->sendResponse($post->toArray(),'Create succesfully');
     }
@@ -82,12 +98,16 @@ class PostController extends Controller
        $attrs = $request->validate([
         'body' => 'required|string'
         ]);
+        if($request->hasfile('image')){
+            $url = $request->file('image')->store('image_post');
+        }else{
+            $url = null;
+        }
 
         $post->update([
             'body' => $attrs['body'],
+            'image' => $url,
         ]);
-
-
         return $this->sendResponse($post->toArray(),'update succesfully');
     }
 
@@ -101,6 +121,7 @@ class PostController extends Controller
        if($post->user_id != auth()->user()->id){
         return response()->json(['error' => 'Permission denied'],[503]);
        }
+
        $post->comments()->delete();
        $post->likes()->delete();
        $post->delete();

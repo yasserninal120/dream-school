@@ -27,7 +27,7 @@ Route::post('user/create','App\Http\Controllers\Controller@create_user');
 Route::middleware('jwt.auth')->put('user/update/{id}','App\Http\Controllers\Controller@updateUser');
 Route::middleware('jwt.auth')->delete('user/delete/{id}','App\Http\Controllers\Controller@destroyUser');
 Route::middleware('jwt.auth')->get('users','App\Http\Controllers\Controller@viewUsers');
-Route::middleware('jwt.auth')->get('test','App\Http\Controllers\Controller@test');
+Route::get('test','App\Http\Controllers\Controller@test');
 Route::middleware('jwt.auth')->get('use','App\Http\Controllers\Controller@acountDetiles');
 /////semester route
 Route::middleware('jwt.auth')->post('create/semester','App\Http\Controllers\Controller@createSemester');
@@ -36,6 +36,8 @@ Route::get('view/semesters','App\Http\Controllers\Controller@viewSemesters');
 Route::middleware('jwt.auth')->get('view/semester/{id}','App\Http\Controllers\Controller@viewSemester');
 Route::middleware('jwt.auth')->delete('delete/semester/{id}','App\Http\Controllers\Controller@destroySemester');
 Route::middleware('jwt.auth')->post('addTeacher/semester/{sId}/{tId}','App\Http\Controllers\Controller@addTeacherTosemaster');
+
+Route::middleware('jwt.auth')->get('view/student/{id}','App\Http\Controllers\Controller@getStudent');
 
 
 Route::middleware(['jwt.auth'])->group(function () {
@@ -47,12 +49,14 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/posts/{id}','App\Http\Controllers\PostController@update');
     Route::delete('/posts/{id}','App\Http\Controllers\PostController@destroy');
     ///comment
-    Route::get('/posts/{id}/comments','App\Http\Controllers\PostController@index');
-    Route::post('/posts/{id}/comments','App\Http\Controllers\PostController@store');
-    Route::put('/comments/{id}','App\Http\Controllers\PostController@update');
-    Route::put('/comments/{id}','App\Http\Controllers\PostController@destroy');
+    Route::get('/posts/{id}/comments','App\Http\Controllers\CommentController@index');
+    Route::post('/posts/{id}/comments','App\Http\Controllers\CommentController@store');
+    Route::put('/comments/{id}','App\Http\Controllers\CommentController@update');
+    Route::delete('/comments/{id}','App\Http\Controllers\CommentController@destroy');
     //like
-    Route::get('/posts/{id}/likes','App\Http\Controllers\PostController@likeOrUnlike');
+    Route::post('/posts/{id}/likes','App\Http\Controllers\LikeController@likeOrUnlike');
+    Route::put('/get/st/{id}','App\Http\Controllers\Controller@addStudentTosemaseter');
+
 });
 
 
