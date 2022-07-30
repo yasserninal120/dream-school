@@ -24,7 +24,7 @@ Route::post('user/create','App\Http\Controllers\Controller@create_user');
 
 //     });
 // });
-Route::middleware('jwt.auth')->put('user/update/{id}','App\Http\Controllers\Controller@updateUser');
+Route::middleware('jwt.auth')->put('user/update/{id}/{imageUpdate}','App\Http\Controllers\Controller@updateUser');
 Route::middleware('jwt.auth')->delete('user/delete/{id}','App\Http\Controllers\Controller@destroyUser');
 Route::middleware('jwt.auth')->get('users','App\Http\Controllers\Controller@viewUsers');
 Route::get('test','App\Http\Controllers\Controller@test');
@@ -56,6 +56,23 @@ Route::middleware(['jwt.auth'])->group(function () {
     //like
     Route::post('/posts/{id}/likes','App\Http\Controllers\LikeController@likeOrUnlike');
     Route::put('/get/st/{id}','App\Http\Controllers\Controller@addStudentTosemaseter');
+    //student
+    Route::post('creatStudent/{id}','App\Http\Controllers\Controller@createStudent');
+    Route::put('update/student/{id}','App\Http\Controllers\Controller@studentUpdate');
+    Route::get('getStudent/acount/{id}','App\Http\Controllers\CommentController@getStudentAcounte');
+    Route::delete('deleted/student','App\Http\Controllers\CommentController@deletedStudent');
+    Route::get('/lastIdAdd','App\Http\Controllers\Controller@maxIdStudentTable');
+    /////insat
+    Route::post('/insta/create/{id}','App\Http\Controllers\Controller@creatInstaToStudent');
+    Route::put('/insta/update/{id}','App\Http\Controllers\Controller@updateInstaToStudent');
+    Route::get('/get/insta/{id}','App\Http\Controllers\Controller@getInsta');
+    //pay
+    Route::get('/pay/get/{id}','App\Http\Controllers\Controller@getPays');
+    Route::post('/pay/create/{id}','App\Http\Controllers\Controller@createPay');
+    Route::put('/pay/update/{id}','App\Http\Controllers\Controller@editPay');
+    Route::delete('/pay/deleted/{id}','App\Http\Controllers\Controller@deletedPay');
+
+
 
 });
 

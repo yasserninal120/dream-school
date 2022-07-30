@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class UpdateToUsersTable extends Migration
+class UpdateStudintIdToInstalmentsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class UpdateToUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('image')->nullable()->change();
+        Schema::table('instalments', function (Blueprint $table) {
+            $table->integer('student_id')->unsigned()->unique()->change();
 
         });
     }
@@ -26,7 +26,7 @@ class UpdateToUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('instalments', function (Blueprint $table) {
             //
         });
     }

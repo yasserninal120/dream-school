@@ -11,7 +11,7 @@ class Student extends Model
     protected $fillable = [
         'user_id',
         'samester_id',
-       
+
     ];
 
     public function user(){
@@ -20,5 +20,9 @@ class Student extends Model
     public function samester(){
         return $this-> belongsTo(Samester::class,'samester_id');
     }
+    public function instalment(){
+        return $this->hasOne(instalment::class,'student_id');
+    }
+
 
 }

@@ -18,7 +18,7 @@ class AddSamesterIdToStudentsTable extends Migration
         Schema::table('students', function (Blueprint $table) {
 
             $table->integer("samester_id")->unsigned()->nullable();
-            $table->foreign('samester_id')->references('id')->on('samesters')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('samester_id')->references('id')->on('samesters')->onDelete('SET NULL')->onUpdate('cascade');
         });
     }
 

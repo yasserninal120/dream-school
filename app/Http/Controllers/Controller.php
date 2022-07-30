@@ -1,5 +1,9 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Models\instalment;
+use App\Models\pay;
+use App\Models\post;
 use App\Models\Role;
 use App\Models\Samester;
 use App\Models\Student;
@@ -65,8 +69,12 @@ class Controller extends BaseController
         $creaetUser->email = $request->get('email');
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
-        if($request->hasfile('image')){
-            $url = $request->file('image')->store('image_profile');
+        if($request->input('image')){
+            $image = base64_decode($request->input('image'));
+            $png_url = time().".png";
+             file_put_contents(public_path('/storage/image_profile/').$png_url, $image);
+            $url = 'image_profile/'.$png_url;
+
         }else{
             $url = null;
         }
@@ -82,12 +90,12 @@ class Controller extends BaseController
         foreach($getUser as $user){
             $role_id = $user->role_id;
         }
-        if($role_id == 3){
-            Student::create([
-                'user_id' => $user -> id,
-                // 'samester_id' => 1 ,
-            ]);
-        }
+        // if($role_id == 3){
+        //     Student::create([
+        //         'user_id' => $user -> id,
+        //         // 'samester_id' => 1 ,
+        //     ]);
+        // }
         //// add teacher to teacher table
         if($role_id == 2){
            $teacher =  Teacher::create([
@@ -113,18 +121,18 @@ class Controller extends BaseController
         $credentials = $request->only('email','password');
         try{
             if(! $token = JWTAuth::attempt($credentials)){
-                return response()->json(['error' => 'خطاء في كلمة السر او اسم المستخدم'],[503]);
+                return response()->json(['error' => 'خطاء في كلمة السر او اسم المستخدم'],503);
 
             }
         }catch(JWTException $e){
-            return response()->json(['error' => 'could not create token'],[503]);
+            return response()->json(['error' => 'could not create token'],503);
 
         }
         // return response() -> json(compact('token'));
         return response() -> json(['token' => $token],200);
     }
 
-    public function updateUser(Request $request , $id){
+    public function updateUser(Request $request , $id ,$imageUpdate){
         $input = $request -> all();
         $validated = Validator::make($input,[
             'email' => 'required',
@@ -135,16 +143,24 @@ class Controller extends BaseController
         if($validated -> fails()){
             return $this->sendError('error validation',$validated -> errors());
         }
-        if($request->hasfile('image')){
-            $url = $request->file('image')->store('image_profile');
+
+        if($imageUpdate == 1){
+            if($request->input('image')){
+                $image = base64_decode($request->input('image'));
+                $png_url = time().".png";
+                 file_put_contents(public_path('/storage/image_profile/').$png_url, $image);
+                $url = 'image_profile/'.$png_url;
+            }
         }else{
-            $url = null;
+            $url = $request->input('image');
         }
+
+
         //http://127.0.0.1:8000/storage/image_profile/YORna4xgc4MwQyr6vLogUWIVSiD4PB7YM70xCulY.png
         $user  = User::find($id);
         $user->name = $input['name'];
         $user->email = $input['email'];
-        $user->password = $input['password'];
+        $user->password = Hash::make($request->get('password'));
         $user->role_id = $input['role'];
         $user->image = $url;
         $user->save();
@@ -153,13 +169,26 @@ class Controller extends BaseController
     }
     public function destroyUser($id){
         $user = User::find($id);
-        $user->delete();
-        return $this->sendResponse($user->toArray(),'deleted succesfully');
+        if($user->role_id == 1){
+            $post = post::where('user_id' , '=', $id)->delete();
+            $user->delete();
+           return $this->sendResponse($user->toArray(),'deleted succesfully');
+
+        }
+        // if($user->role_id == 2){
+        //     return 'teacher';
+
+        // }
+        // if($user->role_id == 3){
+        //     return 'student';
+        // }
+        // $user->delete();
+        // return $this->sendResponse($user->toArray(),'deleted succesfully');
 
     }
 
     public function viewUsers(){
-            $users = User::all();
+            $users = User::orderBy('created_at','desc')->get();
             return $this->sendResponse($users->toArray(),'read succesfully');
 
     }
@@ -216,6 +245,7 @@ class Controller extends BaseController
         }
     }
     public function viewSemester($id){
+
       $st =  Student::where('samester_id','=',$id)->with('user')->get();
         // $semestare = Samester::find($id);
         // $st = $semestare->student;
@@ -243,7 +273,7 @@ class Controller extends BaseController
 
      }
     public function test(){
-        $Users = User::with('role')->get();
+        $Users = User::orderBy('created_at','desc')->with('role')->get();
         return $this->sendResponse($Users->toArray(),'read succesfully');
     }
     public function acountDetiles(){
@@ -258,6 +288,163 @@ class Controller extends BaseController
         return $this->sendResponse($studetn->toArray(),'read succesfully');
 
     }
+/////////student
+public function createStudent($userId  ,Request $request){
+    $name = $request->input('name');
+    $sId = $request->input('sId');
+    if($request->input('image')){
+        $image = base64_decode($request->input('image'));
+        $png_url = time().".png";
+         file_put_contents(public_path('/storage/image_profile/').$png_url, $image);
+        $url = 'image_profile/'.$png_url;
+
+    }else{
+        $url = null;
+    }
+    $student = new Student();
+    $student->user_id = $userId;
+    $student->name = $name;
+    $student->image = $url;
+    $student->samester_id = $sId;
+    $student->save();
+    return $this->sendResponse($student->toArray(),'create succesfully');
+}
+public function getStudentAcounte($userId){
+    $student = Student::where('user_id', '=' , $userId)->with('samester')->get();
+    return $this->sendResponse($student->toArray(),'get succesfully');
+}
+public function studentUpdate($id , Request $request){
+    $student = Student::find($id);
+  $student ->name = $request->input('name');
+  $student->image = $request->input('image');
+  $student->save();
+  return $this->sendResponse($student->toArray(),'Update succesfully');
+
+}
+// public function deletedStudent($id ){
+// $student = Student::find($id);
+// $student->delete();
+// return $this->sendResponse($student->toArray(),'deleted succesfully');
+
+// }
+public function deletedStudent(  Request $request){
+
+    $studetId = explode(",",$request->input('ids')) ;
+    Student::whereIn('id',$studetId)->delete();
+   return response()->json(['true' => 'deleted Sucsse']);
+
+ }
+
+//////instalements
+public function creatInstaToStudent($id , Request $request){
+//     $validator = Validator::make($request->all(), [
+//         'student_id' => 'unique:instalments',
+//    ]);
+
+//    if ($validator->fails()) {
+//        $errors = $validator->errors();
+//            return response()->json(['status' => false, 'errors' => $errors]);
+//    }
+    error_log('started');
+
+        $is =  new instalment();
+        $is->student_id = $id;
+        $is->discointUsdOrPersent = $request->input('discount');
+        $is->instalment = $request->input('insta');
+        $is->transport = $request->input('trans');
+        $is->persent	= $request->input('pearsnt');
+        $instaAll =  ($request->input('insta')+$request->input('trans'));
+        $instaAfter = $instaAll;
+        $pearsnt = $request->input('discount');
+        if($request->input('pearsnt') == 1){
+            $instaAfter = $instaAll -  (($instaAll*$pearsnt) / 100);
+        }
+        if($request->input('pearsnt') == 0){
+         $instaAfter = $instaAll - $pearsnt;
+        }
+        if($request->input('pearsnt') == 2){
+         $instaAfter = $instaAll ;
+        }
+        $is->instaAfterPearsent	 = $instaAfter;
+
+        $is->save();
+         return $this->sendResponse($is->toArray(),'create succesfully');
+}
+
+public function updateInstaToStudent($id , Request $request){
+   $is = instalment::find($id);
+   $is->discointUsdOrPersent = $request->input('discount');
+   $is->instalment = $request->input('insta');
+   $is->transport = $request->input('trans');
+   $is->persent	= $request->input('pearsnt');
+   $instaAll =  ($request->input('insta')+$request->input('trans'));
+   $instaAfter = $instaAll;
+   $pearsnt = $request->input('discount');
+   if($request->input('pearsnt') == 1){
+       $instaAfter = $instaAll -  (($instaAll*$pearsnt) / 100);
+   }
+   if($request->input('pearsnt') == 0){
+    $instaAfter = $instaAll - $pearsnt;
+
+   }
+   if($request->input('pearsnt') == 2){
+    $instaAfter = $instaAll ;
+   }
+   $is->instaAfterPearsent	 = $instaAfter;
+
+   $is->save();
+    return $this->sendResponse($is->toArray(),'create succesfully');
+
+}
+
+public function getInsta($id){
+ $insta = instalment::where('student_id', '=' , $id)->get();
+ return $this->sendResponse($insta->toArray(),'create succesfully');
+
+}
+///pays
+
+public function createPay ($id , Request $request){
+
+$pay = pay::create([
+     'pay' => $request->input('pay'),
+     'instalment_id' => $id,
+     'created_at' => Carbon::now()->format('D, M d, Y h:i A'),
+]);
+return $this->sendResponse($pay->toArray(),'create succesfully');
+
+}
+
+public function editPay ($id , Request $request){
+    $pay = pay::find($id);
+     $pay->pay = $request->input('pay');
+     $pay->save();
+
+     return $this->sendResponse($pay->toArray(),'update succesfully');
+
+
+}
+public function getPays($id){
+$pays = pay::where('instalment_id' , '=' , $id)->get();
+return $this->sendResponse($pays->toArray(),'update succesfully');
+
+}
+public function deletedPay ($id ){
+
+    $pay = pay::find($id);
+     $pay->delete();
+     return $this->sendResponse($pay->toArray(),'update succesfully');
+
+
+}
+
+
+public function maxIdStudentTable(){
+    $lastIdAdd = Student::find(Student::max('id'));
+    return $this->sendResponse($lastIdAdd->toArray(),'update succesfully');
+
+}
+
 
 
 

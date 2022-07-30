@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class UpdateToUsersTable extends Migration
+class AddColumnToStudentsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class UpdateToUsersTable extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('image')->nullable()->change();
-
+        Schema::table('students', function (Blueprint $table) {
+            $table->string('name')->nullable();
+            $table->string('image')->nullable();
         });
     }
 
@@ -26,7 +26,7 @@ class UpdateToUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('students', function (Blueprint $table) {
             //
         });
     }
