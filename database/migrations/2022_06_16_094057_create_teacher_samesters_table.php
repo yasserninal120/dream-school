@@ -16,12 +16,13 @@ class CreateTeacherSamestersTable extends Migration
         Schema::defaultStringLength(191);
 
         Schema::create('teacher_samesters', function (Blueprint $table) {
-            $table->increments('id')->unsigned()->nullable();
+            $table->increments('id')->unsigned();
             $table->integer('teacher_id')->unsigned();
-            $table->foreign('teacher_id')->references('id')->on('teachers');
+            $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('cascade')->onUpdate('cascade');
 
             $table->integer('semester_id')->unsigned();
-            $table->foreign('semester_id')->references('id')->on('samesters');
+            $table->foreign('semester_id')->references('id')->on('samesters')->onDelete('cascade')->onUpdate('cascade');
+
 
 
 

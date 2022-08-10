@@ -163,6 +163,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         JD\Cloudder\CloudderServiceProvider::class,
+        Alkoumi\CarbonDateTranslator\CarbonDateTranslatorServiceProvider::class,
 
         /*
          * Package Service Providers...

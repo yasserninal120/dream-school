@@ -15,7 +15,7 @@ class CreateInstalmentsTable extends Migration
     {
         Schema::create('instalments', function (Blueprint $table) {
             $table->increments('id')->nullable()->unsigned();
-            $table->integer('student_id')->unsigned();
+            $table->integer('student_id')->unsigned()->unique();
             $table->foreign('student_id')->references('id')->on('students')->onDelete('cascade')->onUpdate('cascade');
             $table->integer('discointUsdOrPersent')->nullable();
             $table->integer('instalment');

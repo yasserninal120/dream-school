@@ -19,8 +19,6 @@ class instalment extends Model
         return $this->belongsTo(Student::class,'student_id');
     }
 
-    public function pay(){
-        return $this->hasMany(pay::class,'instalment_id');
-    }
+
 
 }

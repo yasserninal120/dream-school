@@ -4,8 +4,67 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9be76a508db98da8e041a981d333f02b",
+    "content-hash": "19448651ec6202035a1097965a63df4f",
     "packages": [
+        {
+            "name": "alkoumi/carbon-date-translator",
+            "version": "v1.5.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/alkoumi/carbon-date-translator.git",
+                "reference": "6f27c76941ad100fde16cc5a823759ff7dbb2398"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/alkoumi/carbon-date-translator/zipball/6f27c76941ad100fde16cc5a823759ff7dbb2398",
+                "reference": "6f27c76941ad100fde16cc5a823759ff7dbb2398",
+                "shasum": ""
+            },
+            "require": {
+                "nesbot/carbon": "*",
+                "php": ">=5.5.9"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Alkoumi\\CarbonDateTranslator\\CarbonDateTranslatorServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Alkoumi\\CarbonDateTranslator\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mohammed Alkoumi",
+                    "email": "komy66@gmail.com"
+                }
+            ],
+            "description": "Laravel package to translate carbon date to our Amazing 💝 Arabic language even the future dates. to look like [منذ ٥ دقائق] , [بعد سبع ساعات]",
+            "homepage": "https://be.net/komy",
+            "keywords": [
+                "arabic",
+                "arabic-date-translator",
+                "carbon",
+                "carbon-date",
+                "carbon-date-translator",
+                "date",
+                "date-translator",
+                "translator"
+            ],
+            "support": {
+                "issues": "https://github.com/alkoumi/carbon-date-translator/issues",
+                "source": "https://github.com/alkoumi/carbon-date-translator/tree/v1.5.4"
+            },
+            "time": "2019-12-27T10:45:41+00:00"
+        },
         {
             "name": "asm89/stack-cors",
             "version": "v2.1.1",

@@ -17,8 +17,8 @@ class CreatePaysTable extends Migration
         Schema::create('pays', function (Blueprint $table) {
             $table->increments('id')->unsigned();
             $table->integer('pay');
-            $table->integer('instalment_id')->unsigned();
-            $table->foreign('instalment_id')->references('id')->on('instalments')->onDelete('cascade')->onUpdate('cascade');
+            $table->integer('user_id')->unsigned();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
     }

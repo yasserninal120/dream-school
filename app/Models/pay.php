@@ -10,11 +10,12 @@ class pay extends Model
     use HasFactory;
     protected $fillable = [
         'pay',
-        'instalment_id'
+        'user_id',
+        'created_at'  => 'datetime:Y-m-d H:i',
     ];
 
-    public function instalment(){
-        return $this-> belongsTo(instalment::class,'instalment_id');
+    public function user(){
+        return $this-> belongsTo(User::class,'user_id');
     }
 
 

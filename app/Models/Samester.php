@@ -18,7 +18,10 @@ class Samester extends Model
         return $this->hasOne(Samester::class,'samester_id');
     }
     public function teacher(){
-        return $this->belongsToMany(Teacher::class,'teacher_samesters','semester_id','teacher_id','id','id');
+        return $this->hasMany(Teacher::class,'teacher_samesters','semester_id','teacher_id','id','id');
+    }
+    public function homwrk(){
+        return $this->hasMany(Homwork::class,'semester_id');
     }
 
 }

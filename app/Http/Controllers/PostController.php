@@ -92,9 +92,9 @@ class PostController extends Controller
        if(!$post){
         return response()->json(['error' => 'post not found'],[503]);
        }
-       if($post->user_id != auth()->user()->id){
-        return response()->json(['error' => 'Permission denied'],[503]);
-       }
+    //    if($post->user_id != auth()->user()->id){
+    //     return response()->json(['error' => 'Permission denied'],[503]);
+    //    }
        $attrs = $request->validate([
         'body' => 'required|string'
         ]);
@@ -118,9 +118,9 @@ class PostController extends Controller
        if(!$post){
         return response()->json(['error' => 'post not found'],[503]);
        }
-       if($post->user_id != auth()->user()->id){
-        return response()->json(['error' => 'Permission denied'],[503]);
-       }
+    //    if($post->user_id != auth()->user()->id){
+    //     return response()->json(['error' => 'Permission denied'],[503]);
+    //    }
 
        $post->comments()->delete();
        $post->likes()->delete();

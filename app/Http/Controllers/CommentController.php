@@ -88,9 +88,9 @@ class CommentController extends Controller
        if(!$comment){
         return response()->json(['error' => 'comment not found'],[503]);
        }
-       if($comment->user_id != auth()->user()->id){
-        return response()->json(['error' => 'Permission denied'],[503]);
-       }
+    //    if($comment->user_id != auth()->user()->id){
+    //     return response()->json(['error' => 'Permission denied'],[503]);
+    //    }
        $attrs = $request->validate([
         'comment' => 'required|string'
         ]);
@@ -107,9 +107,9 @@ class CommentController extends Controller
     if(!$comment){
      return response()->json(['error' => 'comment not found'],[503]);
     }
-    if($comment->user_id != auth()->user()->id){
-     return response()->json(['error' => 'Permission denied'],[503]);
-    }
+    // if($comment->user_id != auth()->user()->id){
+    //  return response()->json(['error' => 'Permission denied'],[503]);
+    // }
 
     $comment->delete();
     return $this->sendResponse($comment->toArray(),'deleted succesfully');

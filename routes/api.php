@@ -35,11 +35,9 @@ Route::middleware('jwt.auth')->put('update/semester/{id}','App\Http\Controllers\
 Route::get('view/semesters','App\Http\Controllers\Controller@viewSemesters');
 Route::middleware('jwt.auth')->get('view/semester/{id}','App\Http\Controllers\Controller@viewSemester');
 Route::middleware('jwt.auth')->delete('delete/semester/{id}','App\Http\Controllers\Controller@destroySemester');
-Route::middleware('jwt.auth')->post('addTeacher/semester/{sId}/{tId}','App\Http\Controllers\Controller@addTeacherTosemaster');
+Route::middleware('jwt.auth')->post('addTeacher/semester/{sId}','App\Http\Controllers\Controller@addTeacherTosemaster');
 
 Route::middleware('jwt.auth')->get('view/student/{id}','App\Http\Controllers\Controller@getStudent');
-
-
 Route::middleware(['jwt.auth'])->group(function () {
     ////post
 
@@ -58,7 +56,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/get/st/{id}','App\Http\Controllers\Controller@addStudentTosemaseter');
     //student
     Route::post('creatStudent/{id}','App\Http\Controllers\Controller@createStudent');
-    Route::put('update/student/{id}','App\Http\Controllers\Controller@studentUpdate');
+    Route::put('update/student/{id}/{imageUpdate}','App\Http\Controllers\Controller@studentUpdate');
     Route::get('getStudent/acount/{id}','App\Http\Controllers\CommentController@getStudentAcounte');
     Route::delete('deleted/student','App\Http\Controllers\CommentController@deletedStudent');
     Route::get('/lastIdAdd','App\Http\Controllers\Controller@maxIdStudentTable');
@@ -70,8 +68,26 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/pay/get/{id}','App\Http\Controllers\Controller@getPays');
     Route::post('/pay/create/{id}','App\Http\Controllers\Controller@createPay');
     Route::put('/pay/update/{id}','App\Http\Controllers\Controller@editPay');
-    Route::delete('/pay/deleted/{id}','App\Http\Controllers\Controller@deletedPay');
+    Route::delete('/pay/deleted','App\Http\Controllers\Controller@deletedPay');
 
+    Route::get('/totalInstaToAcoint/{id}','App\Http\Controllers\Controller@toTallInstaToAcount');
+
+    Route::get('/oneStudent/{id}','App\Http\Controllers\Controller@oneStudent');
+    Route::middleware('jwt.auth')->get('usertpprint','App\Http\Controllers\Controller@acountDetilesToprint');
+    Route::get('/getTeacher','App\Http\Controllers\Controller@getTeacher');
+    Route::get('/getTeacherClass/{id}','App\Http\Controllers\Controller@getTeacherClass');
+
+    Route::delete('/teachetRemoveFromClass/{id}','App\Http\Controllers\Controller@teachetRemoveFromClass');
+    Route::get('/date','App\Http\Controllers\Controller@date');
+    Route::post('/takeCheckUp','App\Http\Controllers\Controller@takeCheckUp');
+    Route::put('/updateTakeCheckUp','App\Http\Controllers\Controller@updateTakeCheckUp');
+    Route::get('/check/{id}','App\Http\Controllers\Controller@getCheck');
+    Route::get('/getStudentCount','App\Http\Controllers\Controller@countStudent');
+    Route::post('/addHomWork/{smid}','App\Http\Controllers\Controller@addHomWork');
+    Route::put('/updateHomWork/{hid}','App\Http\Controllers\Controller@updateHomWork');
+    Route::get('/gethomwork/{sid}','App\Http\Controllers\Controller@gethomwork');
+    Route::delete('/deleteHom/{hid}','App\Http\Controllers\Controller@deleteHom');
+    Route::put('/updatenew','App\Http\Controllers\Controller@updatenew');
 
 
 });

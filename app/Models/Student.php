@@ -23,6 +23,8 @@ class Student extends Model
     public function instalment(){
         return $this->hasOne(instalment::class,'student_id');
     }
-
+    public function morningCheck(){
+        return $this-> hasMany(Student::class,'student_id');
+    }
 
 }
