@@ -20,11 +20,12 @@ class Student extends Model
     public function samester(){
         return $this-> belongsTo(Samester::class,'samester_id');
     }
-    public function instalment(){
-        return $this->hasOne(instalment::class,'student_id');
-    }
+
     public function morningCheck(){
-        return $this-> hasMany(Student::class,'student_id');
+        return $this-> hasMany(MorningCheckUp::class,'student_id');
+    }
+    public function note(){
+        return $this->hasMany(Note::class ,'student_id');
     }
 
 }

@@ -103,6 +103,8 @@ return [
         public_path('upload') => storage_path('app/upload'),
         public_path('image_profile') => storage_path('app/profile'),
         public_path('image_post') => storage_path('app/profile'),
+        public_path('audio') => storage_path('app/public'),
+
 
     ],
 

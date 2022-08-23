@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Homwork;
 use App\Models\instalment;
 use App\Models\MorningCheckUp;
+use App\Models\Note;
 use App\Models\pay;
 use App\Models\post;
 use App\Models\Role;
@@ -33,6 +34,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use JD\Cloudder\Cloudder;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Crypt;
+use Mockery\Matcher\Not;
 
 // use App\Http\Controllers\Storage;
 
@@ -86,6 +88,12 @@ class Controller extends BaseController
         $creaetUser->image = $url;
         $creaetUser->text_plane = $request->get('password');
         $creaetUser->note = $request->input('note');
+        if($request->input('phone')){
+           $creaetUser->phoneNumber = $request->input('phone');
+        }else{
+            $creaetUser->phoneNumber ="000";
+
+        }
         $creaetUser->save();
 
         $user = User::first();
@@ -96,21 +104,49 @@ class Controller extends BaseController
         foreach($getUser as $user){
             $role_id = $user->role_id;
         }
-        // if($role_id == 3){
-        //     Student::create([
-        //         'user_id' => $user -> id,
-        //         // 'samester_id' => 1 ,
-        //     ]);
-        // }
-        //// add teacher to teacher table
         if($role_id == 2){
            $teacher =  Teacher::create([
                 'user_id' => $user -> id,
             ]);
 
         }
+
+         if($role_id == 3){
+            $is =  new instalment();
+            $is->user_id = $creaetUser->id;
+            $is->discointUsdOrPersent = $request->input('discount');
+            $is->instalment = $request->input('insta');
+            $is->transport = $request->input('trans');
+            $is->persent	= $request->input('pearsnt');
+            $instaAll =  ($request->input('insta'));
+            $instaAfter = $instaAll +$request->input('trans');
+            $pearsnt = $request->input('discount');
+            if($request->input('pearsnt') == 1){
+                $instaALlP = $instaAll -  (($instaAll*$pearsnt) / 100);
+                  $instaAfter  = $instaALlP + $request->input('trans');
+            }
+            if($request->input('pearsnt') == 0){
+             $instaALlP = $instaAll - $pearsnt;
+             $instaAfter  = $instaALlP + $request->input('trans');
+            }
+            if($request->input('pearsnt') == 2){
+             $instaAfter = $instaAll +$request->input('trans');
+            }
+            if($request->input('pearsnt') == 3){
+                $instaAfter = $request->input('munInstan') +$request->input('trans');
+           }
+            $is->instaAfterPearsent	 = $instaAfter;
+
+            $is->save();
+            return response()->json(['tre' => 'ee'],200);
+
+         }
+
+
+
+
         error_log('finished');
-        return response() -> json(compact('token'));
+        return response() -> json(['user' => $creaetUser],200);
     }
 
 
@@ -152,19 +188,21 @@ class Controller extends BaseController
         }
         $user  = User::find($id);
 
-            $t= Teacher::where('user_id','=',$id)->get();
-               if($t){
+            $t= Teacher::where('user_id','=',$id)->count();
+
                    if($request->input('role') == 2){
-                    $teacher =  Teacher::create([
-                        'user_id' => $user -> id,
-                    ]);
+                       if($t == 0){
+                       $teacher = new Teacher();
+                       $teacher->user_id = $user->id;
+                       $teacher->save();
+                       }
+
                    }else{
                        if($request->input('role') != 2){
                         Teacher::where('user_id','=',$id)->delete();
                        }
                    }
 
-               }
 
 
         // if($t){
@@ -201,6 +239,12 @@ class Controller extends BaseController
         $user->image = $url;
         $user->text_plane = $request->get('password');
         $user->note = $request->input('note');
+        if($request->input('phone')){
+            $user->phoneNumber = $request->input('phone');
+         }else{
+             $user->phoneNumber ="000";
+
+         }
         $user->save();
         return $this->sendResponse($user->toArray(),'Update succesfully');
 
@@ -306,29 +350,53 @@ class Controller extends BaseController
         return $this->sendResponse($st->toArray(),'read succesfully');
     }
 
-    public function addTeacherTosemaster($samester_id ,Request $request){
+    public function addTeacherTosemaster($sId ,Request $request){
+        $ifound =  DB::table('teacher_samesters')->where('teacher_id', '=', $request->input('ids'))->where('semester_id','=',$sId)->count();
 
-        $samester= Samester::find($samester_id);
-        if(str_contains($request->input('ids'),",")){
-            $techerId = explode(",",$request->input('ids')) ;
-            foreach ($techerId as $t_id) {
-                $s = Samester::where('id','=',$samester_id)->whereHas('teacher',function($q) use($t_id){
-                    return $q->where('teacher_id','=',$t_id);
-                })->count();
-              if($s == 0){
-                  $samester->teacher()->attach([$t_id]);
-              }
+      if(str_contains($request->input('ids'),",")){
+        $techerId = explode(",",$request->input('ids'));
+        foreach($techerId as $t){
+            $ifound =  DB::table('teacher_samesters')->where('teacher_id', '=', $t)->where('semester_id','=',$sId)->count();
+            if($ifound == 0){
+               $ts = new  teacherSamester();
+               $ts->semester_id = $sId;
+               $ts->teacher_id = $t;
+               $ts->save();
             }
-        }else{
-            $id = $request->input('ids');
-            $s = Samester::where('id','=',$samester_id)->whereHas('teacher',function($q) use($id){
-                return $q->where('teacher_id','=',$id);
-            })->count();
-                if($s == 0){
-                    $samester->teacher()->attach([$id]);
-                }
         }
-        return response()->json(['true' => 'update Sucsse']);
+
+      }else{
+        $ifound =  DB::table('teacher_samesters')->where('teacher_id', '=', $request->input('ids'))->where('semester_id','=',$sId)->count();
+            if($ifound == 0){
+               $ts = new  teacherSamester();
+               $ts->semester_id = $sId;
+               $ts->teacher_id = $request->input('ids');
+               $ts->save();
+            }
+      }
+       return response()->json(['tru' => 'succ']);
+
+        //   return $samester= Samester::where('id','=',$sId)->with('teacher')->get();
+        // if(str_contains($request->input('ids'),",")){
+        //     $techerId = explode(",",$request->input('ids'));
+        //     foreach ($techerId as $t_id) {
+        //         $s = Samester::where('id','=',$sId)->whereHas('teacher',function($q) use($t_id){
+        //             return $q->where('teacher_id','=',$t_id);
+        //         })->count();
+        //       if($s == 0){
+        //           $samester->teacher()->attach([$t_id]);
+        //       }
+        //     }
+        // }else{
+        //     $id = $request->input('ids');
+        //     $s = Samester::where('id','=',$sId)->whereHas('teacher',function($q) use($id){
+        //         return $q->where('teacher_id','=',$id);
+        //     })->count();
+        //         if($s == 0){
+        //             $samester->teacher()->attach([$id]);
+        //         }
+        // }
+        // return response()->json(['true' => 'update Sucsse']);
     }
 
      public function addStudentTosemaseter( $id , Request $request){
@@ -353,7 +421,7 @@ class Controller extends BaseController
 
      }
     public function test(){
-        $Users = User::orderBy('created_at','desc')->with('role')->get();
+        $Users = User::orderBy('created_at','desc')->where("role_id",'!=',3)->with('role')->get();
         return $this->sendResponse($Users->toArray(),'read succesfully');
     }
     public function acountDetiles(){
@@ -416,27 +484,8 @@ public function createStudent($userId  ,Request $request){
     $student->className = $nameClass;
     $student->save();
 ////////////////////
-        $is =  new instalment();
-        $is->student_id = $student->id;
-        $is->discointUsdOrPersent = $request->input('discount');
-        $is->instalment = $request->input('insta');
-        $is->transport = $request->input('trans');
-        $is->persent	= $request->input('pearsnt');
-        $instaAll =  ($request->input('insta')+$request->input('trans'));
-        $instaAfter = $instaAll;
-        $pearsnt = $request->input('discount');
-        if($request->input('pearsnt') == 1){
-            $instaAfter = $instaAll -  (($instaAll*$pearsnt) / 100);
-        }
-        if($request->input('pearsnt') == 0){
-        $instaAfter = $instaAll - $pearsnt;
-        }
-        if($request->input('pearsnt') == 2){
-        $instaAfter = $instaAll ;
-        }
-        $is->instaAfterPearsent	 = $instaAfter;
 
-        $is->save();
+         return $this->sendResponse($student->toArray(),'create succesfully');
 
 
 
@@ -452,7 +501,7 @@ public function createStudent($userId  ,Request $request){
     return $this->sendResponse($student->toArray(),'create succesfully');
 }
 public function getStudentAcounte($userId){
-    $student = Student::orderBy('created_at','desc')->where('user_id', '=' , $userId)->with('samester')->with('instalment')->get();
+    $student = Student::orderBy('created_at','desc')->where('user_id', '=' , $userId)->with('samester')->get();
     return $this->sendResponse($student->toArray(),'get succesfully');
 }
 public function studentUpdate($id , Request $request ,$imageUpdate){
@@ -509,14 +558,16 @@ public function creatInstaToStudent($id , Request $request){
         $is->instalment = $request->input('insta');
         $is->transport = $request->input('trans');
         $is->persent	= $request->input('pearsnt');
-        $instaAll =  ($request->input('insta')+$request->input('trans'));
-        $instaAfter = $instaAll;
+        $instaAll =  ($request->input('insta'));
+        $instaAfter = $instaAll +$request->input('trans');
         $pearsnt = $request->input('discount');
         if($request->input('pearsnt') == 1){
-            $instaAfter = $instaAll -  (($instaAll*$pearsnt) / 100);
+            $instaALlP = $instaAll -  (($instaAll*$pearsnt) / 100);
+              $instaAfter  = $instaALlP + $request->input('trans');
         }
         if($request->input('pearsnt') == 0){
-         $instaAfter = $instaAll - $pearsnt;
+         $instaALlP = $instaAll - $pearsnt;
+         $instaAfter  = $instaALlP + $request->input('trans');
         }
         if($request->input('pearsnt') == 2){
          $instaAfter = $instaAll ;
@@ -533,18 +584,24 @@ public function updateInstaToStudent($id , Request $request){
    $is->instalment = $request->input('insta');
    $is->transport = $request->input('trans');
    $is->persent	= $request->input('pearsnt');
-   $instaAll =  ($request->input('insta')+$request->input('trans'));
-   $instaAfter = $instaAll;
+   $instaAll =  ($request->input('insta'));
+   $instaAfter = $instaAll +$request->input('trans');
    $pearsnt = $request->input('discount');
    if($request->input('pearsnt') == 1){
-       $instaAfter = $instaAll -  (($instaAll*$pearsnt) / 100);
+       $instaALlP = $instaAll -  (($instaAll*$pearsnt) / 100);
+         $instaAfter  = $instaALlP + $request->input('trans');
    }
    if($request->input('pearsnt') == 0){
-    $instaAfter = $instaAll - $pearsnt;
-
+    $instaALlP = $instaAll - $pearsnt;
+    $instaAfter  = $instaALlP + $request->input('trans');
    }
    if($request->input('pearsnt') == 2){
-    $instaAfter = $instaAll ;
+    $instaAfter = $instaAll +$request->input('trans');
+    $is->discointUsdOrPersent = 0;
+   }
+   if($request->input('pearsnt') == 3){
+        $instaAfter = $request->input('munInstan')+$request->input('trans');
+        $is->discointUsdOrPersent = 0;
    }
    $is->instaAfterPearsent	 = $instaAfter;
 
@@ -586,21 +643,6 @@ return $this->sendResponse($pays->toArray(),'update succesfully');
 
 }
 public function deletedPay (Request $request ){
-
-
-    // $payID = explode(",",$request->input('ids'));
-    // pay::whereIn('id',$payID)->delete();
-
-
-    // if(str_contains($request->input('ids'),",")){
-    //     $payID = explode(",",$request->input('ids')) ;
-    //     foreach ($payID as $s_id) {
-    //         pay::find($s_id)->delete();
-    //     }
-    // }else{
-    //     pay::find($request->input('ids'))->delete();
-    // }
-
     if(str_contains($request->input('ids'),",")){
         $payID = explode(",",$request->input('ids')) ;
         foreach ($payID as $s_id) {
@@ -622,23 +664,23 @@ public function maxIdStudentTable(){
 
 
 public function toTallInstaToAcount($userId){
-    $st = Student::where('user_id','=',$userId)->with('instalment')->get();
+    $st = instalment::where('user_id','=',$userId)->get();
     $instan =[];
     $pay = [];
     foreach ($st as $order =>$v)
-     $instan[$order] = $v->instalment->instaAfterPearsent;
+     $instan[$order] = $v->instaAfterPearsent;
      $totalInsta = array_sum($instan);
 
     $p1 = User::where("id", '=',$userId)->with('pays')->get();
     foreach($p1 as $t )
     $e = $t->pays->sum('pay');
-         ;
+
      $alb = $totalInsta - $e;
     return response()->json(['totalInsta' =>$totalInsta, 'alb' => $alb],200);
 
 }
 public function oneStudent($id){
-    $oneStudent = Student::where('id','=',$id)->with('samester')->with('user')->with('instalment')->get();
+    $oneStudent = Student::where('id','=',$id)->with('samester')->with('user')->get();
     return $this->sendResponse($oneStudent->toArray(),'update succesfully');
 
 }
@@ -705,6 +747,7 @@ public function takeCheckUp(Request $request){
                 $check->student_id = $s_id;
                 $check->checkUp	 = $request->input('check');
                 $check->date = $date;
+                $check->new = 1;
                 $check->save();
             }
 
@@ -718,6 +761,7 @@ public function takeCheckUp(Request $request){
                 $check->student_id = $request->input('ids');
                 $check->checkUp	 = $request->input('check');
                 $check->date = $date;
+                $check->new = 1;
                 $check->save();
             }
 
@@ -756,6 +800,10 @@ public function updateTakeCheckUp(Request $request){
 }
 
 public function getCheck($id){
+    $daate = Carbon::now()->locale("ar_SA")->translatedFormat("'l Y m d");
+    MorningCheckUp::where('date', '!=' ,$daate)->update([
+          'new' => 0,
+      ]);
     $check  = MorningCheckUp::orderBy('created_at','desc')->where('student_id' , '=' , $id)->with('student')->get();
     return $this->sendResponse($check->toArray(),'update succesfully');
 
@@ -770,6 +818,26 @@ public function countStudent(){
 
 public function addHomWork($smid  , Request $request){
       $id = Auth::user()->id;
+
+
+      if($request->input('image')){
+        $image = base64_decode($request->input('image'));
+        $png_url = time().".png";
+         file_put_contents(public_path('/storage/image_profile/').$png_url, $image);
+        $url = 'image_profile/'.$png_url;
+    }else{
+        $url = "";
+    }
+
+    if($request->hasfile('aduio')){
+            $file = $request->file('aduio');
+            $extention = $file->getClientOriginalExtension();
+            $filename = time().'.'.$extention;
+            $file->move(public_path('/storage/audio/'),$filename);
+            $audoiUrl = 'audio/'.$filename;
+        }else{
+            $audoiUrl = "";
+        }
     $containHomwork = $request->input('contianHomwork');
     $object = $request->input('ob');
     $date = $request->input('date');
@@ -780,18 +848,41 @@ public function addHomWork($smid  , Request $request){
     $homwork->name_object	= $object;
     $homwork->date = Carbon::now()->locale("ar_SA")->translatedFormat("'l Y m d");
     $homwork->new = 1;
+    $homwork->image = $url;
+    $homwork->audio = $audoiUrl;
     $homwork->save();
     return $this->sendResponse($homwork->toArray(),'update succesfully');
 
 
 }
-public function updateHomWork($hId , Request $request){
+public function updateHomWork($hId  , $imageUpdate, Request $request){
        $homEdit = Homwork::find($hId);
        if($homEdit){
+        if($request->hasfile('aduio')){
+            $file = $request->file('aduio');
+            $extention = $file->getClientOriginalExtension();
+            $filename = time().'.'.$extention;
+            $file->move(public_path('/storage/audio/'),$filename);
+            $audoiUrl = 'audio/'.$filename;
+        }else{
+            $audoiUrl = "";
+        }
+        if($imageUpdate == 1){
+            if($request->input('image')){
+                $image = base64_decode($request->input('image'));
+                $png_url = time().".png";
+                 file_put_contents(public_path('/storage/image_profile/').$png_url, $image);
+                $url = 'image_profile/'.$png_url;
+            }
+        }else{
+            $url = $request->input('image');
+        }
         $containHomwork = $request->input('contianHomwork');
         $object = $request->input('ob');
         $homEdit->contain_homwork = $containHomwork;
         $homEdit->name_object	= $object;
+        $homEdit->audio = $audoiUrl;
+        $homEdit->image = $url;
         $homEdit->save();
         return $this->sendResponse($homEdit->toArray(),'update succesfully');
        }else{
@@ -810,13 +901,21 @@ public function gethomwork($sid){
      return $this->sendResponse($homSe->toArray(),'update succesfully');
     }
 
-    public function deleteHom($id){
-        $deletedHom = Homwork::find($id);
-        if($deletedHom){
-            $deletedHom->delete();
-            return $this->sendResponse($deletedHom->toArray(),'deleted succesfully');
+    public function deleteHom(Request $request){
+
+        if(str_contains($request->input('ids'),",")){
+            $tId = explode(",",$request->input('ids'));
+            foreach ($tId as $s_id) {
+                $check = Homwork::find($s_id);
+                $check->delete();
+            }
+            return response()->json(['deleted' => 'succses']);
+
         }else{
-            return response()->json(['fals' => 'not found ho,']);
+            $h = Homwork::find($request->input('ids'));
+            $h->delete();
+            return response()->json(['deleted' => 'succses']);
+
         }
 
     }
@@ -831,4 +930,89 @@ public function updatenew(){
 }
 
 
+public function addNote($stid, Request $request){
+  $id = Auth::user()->id;
+  $d = Carbon::now()->locale("ar_SA")->translatedFormat("l Y m d");
+  $note = new Note();
+             $note->student_id = $stid;
+             $note->note = $request->input('note');
+             $note->user_id= $id;
+             $note->date = $d;
+             $note->new = 1;
+             $note->save();
+
+  return $this->sendResponse($note->toArray(),'update succesfully');
 }
+public function addNoteAll(Request $request){
+$id = Auth::user()->id;
+ $d = Carbon::now()->locale("ar_SA")->translatedFormat("l Y m d");
+if($request->input('ids') != null){
+    if(str_contains($request->input('ids'),",")){
+        $tId = explode(",",$request->input('ids'));
+        foreach ($tId as $s_id) {
+             $note = new Note();
+             $note->student_id = $s_id;
+             $note->note = $request->input('note');
+             $note->user_id= $id;
+             $note->date = $d;
+             $note->new = 1;
+             $note->save();
+
+        }
+    }
+    return response()->json(['true' => "create succ"]);
+}
+}
+
+public function updateNote($id ,Request $request){
+  $note = Note::find($id);
+  if($note){
+      $note->note = $request->input('note');
+      $note->save();
+      return response()->json(['true' => "update succ"]);
+  }else{
+    return response()->json(['true' => "note founds succ"]);
+  }
+}
+
+public function deletednote(Request $request){
+    if($request->input('ids') != null){
+        if(str_contains($request->input('ids'),",")){
+            $tId = explode(",",$request->input('ids'));
+            foreach ($tId as $s_id) {
+              $n =  Note::find($s_id);
+              $n->delete();
+            }
+        }else{
+             $n =  Note::find($request->input('ids'));
+             $n->delete();
+        }
+        return response()->json(['true' => "deleted succ"]);
+    }
+}
+public function getNotes($id){
+    $daate = Carbon::now()->locale("ar_SA")->translatedFormat("'l Y m d");
+      Note::where('date', '!=' ,$daate)->update([
+          'new' => 0,
+      ]);
+
+      $nots = Note::orderBy('created_at','desc')->where('student_id', '=',$id )->with('user')->with('student')->get();
+      return $this->sendResponse($nots->toArray(),'update succesfully');
+
+}
+
+
+public function PageStudentAcount(){
+    $Users = User::orderBy('created_at','desc')->where("role_id",'=',3)->with('instalment')->with('role')->get();
+    return $this->sendResponse($Users->toArray(),'read succesfully');
+
+}
+public function detilesK(){
+    $user = Auth::user()->id;
+    $u = User::where('id', '=' , $user)->with('instalment')->get();
+    return $this->sendResponse($u->toArray(),'update succesfully');
+
+}
+
+}
+

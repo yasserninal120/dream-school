@@ -74,4 +74,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Homwork::class,'user_id');
     }
 
+    public function note(){
+        return $this->hasMany(Note::class,'user_id');
+    }
+    public function instalment(){
+        return $this->hasOne(instalment::class,'user_id');
+    }
 }

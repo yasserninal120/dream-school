@@ -84,10 +84,17 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/check/{id}','App\Http\Controllers\Controller@getCheck');
     Route::get('/getStudentCount','App\Http\Controllers\Controller@countStudent');
     Route::post('/addHomWork/{smid}','App\Http\Controllers\Controller@addHomWork');
-    Route::put('/updateHomWork/{hid}','App\Http\Controllers\Controller@updateHomWork');
+    Route::post('/updateHomWork/{hid}/{imageUpdate}','App\Http\Controllers\Controller@updateHomWork');
     Route::get('/gethomwork/{sid}','App\Http\Controllers\Controller@gethomwork');
-    Route::delete('/deleteHom/{hid}','App\Http\Controllers\Controller@deleteHom');
+    Route::delete('/deleteHom','App\Http\Controllers\Controller@deleteHom');
     Route::put('/updatenew','App\Http\Controllers\Controller@updatenew');
+    Route::post('/addNote/{stid}','App\Http\Controllers\Controller@addNote');
+    Route::post('/addNoteAll','App\Http\Controllers\Controller@addNoteAll');
+    Route::put('/updateNote/{notid}','App\Http\Controllers\Controller@updateNote');
+    Route::delete('/deletednote','App\Http\Controllers\Controller@deletednote');
+    Route::get('/getNotes/{id}','App\Http\Controllers\Controller@getNotes');
+    Route::get('/StudentPage','App\Http\Controllers\Controller@PageStudentAcount');
+    Route::get('/detilesK','App\Http\Controllers\Controller@detilesK');
 
 
 });
