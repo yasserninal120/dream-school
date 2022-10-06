@@ -57,7 +57,6 @@ class LikeController extends Controller
     }
 
     $like = $post->likes()->where('user_id', auth()->user()->id)->first();
-
     //if not like then like
      if(!$like){
      $like = like::create([
@@ -71,10 +70,11 @@ class LikeController extends Controller
      return response([
          'messeg' => 'DisLike'
      ],200);
-
-
-
    }
-
+   public function userIsLiked($ipBost){
+    $userId = auth()->user()->id;
+    $isLiked = like::where('post_id','=',$ipBost)->where('user_id','=',$userId)->count();
+    return response()->json(['isLiked'=>$isLiked]);
+   }
 
 }

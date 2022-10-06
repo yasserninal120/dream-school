@@ -164,6 +164,7 @@ return [
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         JD\Cloudder\CloudderServiceProvider::class,
         Alkoumi\CarbonDateTranslator\CarbonDateTranslatorServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
 
         /*
          * Package Service Providers...
@@ -192,7 +193,6 @@ return [
     */
 
     'aliases' => [
-
         'App' => Illuminate\Support\Facades\App::class,
         'Arr' => Illuminate\Support\Arr::class,
         'Artisan' => Illuminate\Support\Facades\Artisan::class,
@@ -235,6 +235,7 @@ return [
         'JWTAuth' => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
         'Cloudder' => 'JD\Cloudder\Facades\Cloudder',
+        'Image' => Intervention\Image\Facades\Image::class,
 
     ],
 

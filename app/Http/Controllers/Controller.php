@@ -1,20 +1,32 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\activety;
+use App\Models\activetyObg;
 use App\Models\Homwork;
 use App\Models\instalment;
 use App\Models\MorningCheckUp;
 use App\Models\Note;
+use App\Models\Object1;
+use Illuminate\Support\Arr;
+
+use App\Models\ObjectClass;
 use App\Models\pay;
 use App\Models\post;
+use App\Models\ResuletActive;
 use App\Models\Role;
 use App\Models\Samester;
+use App\Models\SchoolPay;
 use App\Models\Student;
+use App\Models\Takeyem;
+use App\Models\TakeyemStudent;
 use App\Models\Teacher;
 use App\Models\teacherSamester;
+use App\Models\Traning_calss_teacher;
+use App\Models\Traning_class;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-
+use Intervention\Image\ImageManagerStatic as Image;
 use Carbon\Carbon;
 // use GuzzleHttp\Psr7\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -34,6 +46,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use JD\Cloudder\Cloudder;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Redis;
 use Mockery\Matcher\Not;
 
 // use App\Http\Controllers\Storage;
@@ -62,7 +75,7 @@ class Controller extends BaseController
         return response()->json($response , $code );
     }
     ////users-functions
-    public function create_user(Request $request){
+    public function create_user(Request $request , $cityId){
         error_log('started');
         $validated = Validator::make($request->all(),[
             'name' => 'required',
@@ -73,6 +86,7 @@ class Controller extends BaseController
 
         $creaetUser = new User();
         $creaetUser->name = $request->get('name');
+        $creaetUser->city_id = $cityId;
         $creaetUser->password =Hash::make($request->get('password'));
         $creaetUser->role_id = $request->get('role');
         if($request->input('image')){
@@ -174,7 +188,7 @@ class Controller extends BaseController
         return response() -> json(['token' => $token],200);
     }
 
-    public function updateUser(Request $request , $id ,$imageUpdate){
+    public function updateUser(Request $request , $id ,$imageUpdate , $cityId){
         $input = $request -> all();
         $validated = Validator::make($input,[
             'name' => 'required',
@@ -203,22 +217,9 @@ class Controller extends BaseController
                        }
                    }
 
-
-
-        // if($t){
-        //     return "[d]";
-        //     if($request->input('role') == 2){
-        //         $teacher =  Teacher::create([
-        //             'user_id' => $user -> id,
-        //         ]);
-        //         return $t;
-        //     }else{
-        //         if($request->input('role') != 2){
-        //             Teacher::where('user_id','=',$user->id)->delete();
-        //         }
-        //     }
-
-        //     }
+    Student::where('user_id','=',$user->id)->update([
+        'city_id' => $cityId
+    ]);
 
         if($imageUpdate == 1){
             if($request->input('image')){
@@ -237,6 +238,7 @@ class Controller extends BaseController
         $user->password = Hash::make($request->get('password'));
         $user->role_id = $input['role'];
         $user->image = $url;
+        $user->city_id = $cityId;
         $user->text_plane = $request->get('password');
         $user->note = $request->input('note');
         if($request->input('phone')){
@@ -251,6 +253,9 @@ class Controller extends BaseController
     }
     public function destroyUser($id){
         $user = User::find($id);
+         if($id == 2){
+         return response()->json(['can not deleted this acount'],205);
+         }
         if($user->role_id == 1 || $user->role_id == 2){
             $post = post::where('user_id' , '=', $id)->delete();
             $user->delete();
@@ -279,7 +284,7 @@ class Controller extends BaseController
     }
 
 /////////////samestares function
-    public function createSemester(Request $request){
+    public function createSemester(Request $request ,$cityId){
         $input = $request->all();
         $validator = Validator::make($input,[
             'name' => 'required',
@@ -290,6 +295,7 @@ class Controller extends BaseController
         $semestare = new Samester();
         $semestare->id = (Samester::max('id')+1);
         $semestare->name = $request->input('name');
+        $semestare->city_id = $cityId;
         $semestare->save();
         return $this->sendResponse($semestare->toArray(),'created succesfully');
 
@@ -328,9 +334,9 @@ class Controller extends BaseController
 
     }
 
-    public function viewSemesters(){
+    public function viewSemesters($cityId){
         if(auth()->user()->role_id == 1){
-            $semestare = Samester::where('id' , '!=',1)->get();
+            $semestare = Samester::where('id' , '!=',1)->where('city_id','=',$cityId)->get();
             return $this->sendResponse($semestare->toArray(),'read succesfully');
         }
         if(auth()->user()->role_id == 2){
@@ -343,9 +349,7 @@ class Controller extends BaseController
     }
     public function viewSemester($id){
 
-      $st =  Student::where('samester_id','=',$id)->with('user')->get();
-        // $semestare = Samester::find($id);
-        // $st = $semestare->student;
+      $st =  Student::orderBy('name','asc')->where('samester_id','=',$id)->with('user')->get();
 
         return $this->sendResponse($st->toArray(),'read succesfully');
     }
@@ -376,27 +380,6 @@ class Controller extends BaseController
       }
        return response()->json(['tru' => 'succ']);
 
-        //   return $samester= Samester::where('id','=',$sId)->with('teacher')->get();
-        // if(str_contains($request->input('ids'),",")){
-        //     $techerId = explode(",",$request->input('ids'));
-        //     foreach ($techerId as $t_id) {
-        //         $s = Samester::where('id','=',$sId)->whereHas('teacher',function($q) use($t_id){
-        //             return $q->where('teacher_id','=',$t_id);
-        //         })->count();
-        //       if($s == 0){
-        //           $samester->teacher()->attach([$t_id]);
-        //       }
-        //     }
-        // }else{
-        //     $id = $request->input('ids');
-        //     $s = Samester::where('id','=',$sId)->whereHas('teacher',function($q) use($id){
-        //         return $q->where('teacher_id','=',$id);
-        //     })->count();
-        //         if($s == 0){
-        //             $samester->teacher()->attach([$id]);
-        //         }
-        // }
-        // return response()->json(['true' => 'update Sucsse']);
     }
 
      public function addStudentTosemaseter( $id , Request $request){
@@ -421,7 +404,15 @@ class Controller extends BaseController
 
      }
     public function test(){
-        $Users = User::orderBy('created_at','desc')->where("role_id",'!=',3)->with('role')->get();
+        // $Users = User::orderBy('created_at','desc')->where("role_id",'!=',3)->with('role')->with('city')->get();
+        $id = auth()->user()->id;
+        if($id == 1 || $id == 2){
+            $Users = User::orderBy('created_at','desc')->where("role_id",'!=',3)->with('role')->with('city')->get();
+
+        }else{
+            $Users = User::orderBy('created_at','desc')->where("role_id",'!=',3)->where('id', '!=', 1)->where('id', '!=', 2)->with('role')->with('city')->get();
+
+        }
         return $this->sendResponse($Users->toArray(),'read succesfully');
     }
     public function acountDetiles(){
@@ -454,13 +445,13 @@ class Controller extends BaseController
         return response()->json(['name' =>$name, 'role' => $role ,'role_id' => $role_id ,'id' => $id , 'pass' => $pass ,'imag' =>$imag],200);
     }
 
-    public function getStudent($id){
-        $studetn = Student::orderBy('created_at','desc')->where('samester_id','!=',$id)->with('samester')->with('user')->get();
+    public function getStudent($id , $cityId){
+        $studetn = Student::orderBy('created_at','asc')->where('samester_id','!=',$id)->where('city_id','=',$cityId)->with('samester')->with('user')->get();
         return $this->sendResponse($studetn->toArray(),'read succesfully');
 
     }
 /////////student
-public function createStudent($userId  ,Request $request){
+public function createStudent($userId ,$cityUserId  ,Request $request){
     // $max = DB::table('students')->max('id') + 1;
     // DB::students("ALTER TABLE users AUTO_INCREMENT =  $max");
     $name = $request->input('name');
@@ -482,6 +473,7 @@ public function createStudent($userId  ,Request $request){
     $student->image = $url;
     $student->samester_id = $sId;
     $student->className = $nameClass;
+    $student->city_id = $cityUserId;
     $student->save();
 ////////////////////
 
@@ -809,8 +801,8 @@ public function getCheck($id){
 
 
 }
-public function countStudent(){
-    $countStudent = Student::all()->count();
+public function countStudent($cityId){
+    $countStudent = Student::where("city_id",'=',$cityId)->count();
     return response()->json(['StudentCount' => $countStudent]);
 
 }
@@ -818,8 +810,6 @@ public function countStudent(){
 
 public function addHomWork($smid  , Request $request){
       $id = Auth::user()->id;
-
-
       if($request->input('image')){
         $image = base64_decode($request->input('image'));
         $png_url = time().".png";
@@ -934,11 +924,31 @@ public function addNote($stid, Request $request){
   $id = Auth::user()->id;
   $d = Carbon::now()->locale("ar_SA")->translatedFormat("l Y m d");
   $note = new Note();
+            if($request->hasfile('image')){
+                $image =$request->file('image') ;
+                $extention = $image->getClientOriginalExtension();
+                $filename = time().'.'.$extention;
+                $image->move(public_path('/storage/image_profile/'),$filename);
+                $url = 'image_profile/'.$filename;
+            }else{
+                $url = "";
+            }
+            if($request->hasfile('aduio')){
+                    $file = $request->file('aduio');
+                    $extention = $file->getClientOriginalExtension();
+                    $filename = time().'.'.$extention;
+                    $file->move(public_path('/storage/audio/'),$filename);
+                    $audoiUrl = 'audio/'.$filename;
+                }else{
+                    $audoiUrl = "";
+                }
              $note->student_id = $stid;
              $note->note = $request->input('note');
              $note->user_id= $id;
              $note->date = $d;
              $note->new = 1;
+             $note->audio = $audoiUrl;
+             $note->image = $url;
              $note->save();
 
   return $this->sendResponse($note->toArray(),'update succesfully');
@@ -950,11 +960,31 @@ if($request->input('ids') != null){
     if(str_contains($request->input('ids'),",")){
         $tId = explode(",",$request->input('ids'));
         foreach ($tId as $s_id) {
+            if($request->hasfile('image')){
+                $image =$request->file('image') ;
+                $extention = $image->getClientOriginalExtension();
+                $filename = time().'.'.$extention;
+                $image->move(public_path('/storage/image_profile/'),$filename);
+                $url = 'image_profile/'.$filename;
+            }else{
+                $url = "";
+            }
+            if($request->hasfile('aduio')){
+                    $file = $request->file('aduio');
+                    $extention = $file->getClientOriginalExtension();
+                    $filename = time().'.'.$extention;
+                    $file->move(public_path('/storage/audio/'),$filename);
+                    $audoiUrl = 'audio/'.$filename;
+                }else{
+                    $audoiUrl = "";
+                }
              $note = new Note();
              $note->student_id = $s_id;
              $note->note = $request->input('note');
              $note->user_id= $id;
              $note->date = $d;
+             $note->audio = $audoiUrl;
+             $note->image = $url;
              $note->new = 1;
              $note->save();
 
@@ -964,10 +994,32 @@ if($request->input('ids') != null){
 }
 }
 
-public function updateNote($id ,Request $request){
+public function updateNote($id ,Request $request , $imageUpdate){
   $note = Note::find($id);
   if($note){
+        if($request->hasfile('aduio')){
+            $file = $request->file('aduio');
+            $extention = $file->getClientOriginalExtension();
+            $filename = time().'.'.$extention;
+            $file->move(public_path('/storage/audio/'),$filename);
+            $audoiUrl = 'audio/'.$filename;
+        }else{
+            $audoiUrl = "";
+        }
+        if($imageUpdate == 1){
+            if($request->hasfile('image')){
+                $image =$request->file('image') ;
+                $extention = $image->getClientOriginalExtension();
+                $filename = time().'.'.$extention;
+                $image->move(public_path('/storage/image_profile/'),$filename);
+                $url = 'image_profile/'.$filename;
+            }
+        }else{
+            $url = $request->input('image');
+        }
       $note->note = $request->input('note');
+      $note->audio = $audoiUrl;
+      $note->image = $url;
       $note->save();
       return response()->json(['true' => "update succ"]);
   }else{
@@ -1000,10 +1052,8 @@ public function getNotes($id){
       return $this->sendResponse($nots->toArray(),'update succesfully');
 
 }
-
-
-public function PageStudentAcount(){
-    $Users = User::orderBy('created_at','desc')->where("role_id",'=',3)->with('instalment')->with('role')->get();
+public function PageStudentAcount($cityId){
+    $Users = User::orderBy('created_at','desc')->where("role_id",'=',3)->where("city_id",'=',$cityId)->with('instalment')->with('city')->with('role')->get();
     return $this->sendResponse($Users->toArray(),'read succesfully');
 
 }
@@ -1014,5 +1064,444 @@ public function detilesK(){
 
 }
 
+public function createTreaning(Request $request , $cityId){
+
+ $tranig = new  Traning_class();
+ $tranig->name = $request->input('name');
+ $tranig->city_id	 = $cityId;
+ $tranig->save();
+ return $this->sendResponse($tranig->toArray(),'update succesfully');
+
+
+}
+
+
+public function addTeacherTraning(Request $request , $idT){
+
+    if(str_contains($request->input('ids'),",")){
+      $techerId = explode(",",$request->input('ids'));
+      foreach($techerId as $t){
+        $ifound =  DB::table('traning_calss_teachers')->where('teacher_id', '=', $idT)->where('traning_class_id','=',$idT)->count();
+        if($ifound == 0){
+             $ts = new  Traning_calss_teacher();
+             $ts->traning_class_id = $idT;
+             $ts->teacher_id = $t;
+             $ts->save();
+          }
+      }
+
+    }else{
+        $ifound =  DB::table('traning_calss_teachers')->where('teacher_id', '=', $request->input('ids'))->where('traning_class_id','=',$idT)->count();
+        if($ifound == 0){
+            $ts = new  Traning_calss_teacher();
+            $ts->traning_class_id = $idT;
+            $ts->teacher_id = $request->input('ids');
+            $ts->save();
+          }
+    }
+     return response()->json(['tru' => 'succ']);
+
+  }
+
+
+  public function createSchoolPay(Request $request){
+      $schoolPay = new  SchoolPay();
+      $schoolPay->pay = $request->input('pay');
+      $schoolPay->date = Carbon::now()->locale("ar_SA")->translatedFormat("'l Y m d");
+      $schoolPay->user_id = auth()->user()->id;
+      $schoolPay->save();
+      return $this->sendResponse($schoolPay->toArray(),'update succesfully');
+  }
+
+  public function editeSchoolPay(Request $request ,$pauId){
+    $editePay = SchoolPay::find($pauId);
+    $editePay->pay = $request->input('pay');
+    $editePay->save();
+    return $this->sendResponse($editePay->toArray(),'update succesfully');
+  }
+
+   public function deletedSchoolPay(Request $request){
+    if(str_contains($request->input('ids'),",")){
+        $tId = explode(",",$request->input('ids'));
+        foreach ($tId as $s_id) {
+            $check = SchoolPay::find($s_id);
+            $check->delete();
+        }
+        return response()->json(['deleted' => 'succses']);
+
+    }else{
+        $h = SchoolPay::find($request->input('ids'));
+        $h->delete();
+        return response()->json(['deleted' => 'succses']);
+
+    }
+   }
+
+public function boxDetiles(){
+    $allInstament = instalment::orderBy('created_at','desc')->sum('instaAfterPearsent');
+    $getPsyd = pay::orderBy('created_at','desc')->sum('pay');
+    $getBox = SchoolPay::orderBy('created_at','desc')->sum('pay');
+    return response()->json(['imports'=>$allInstament  , 'pays' => $getPsyd , 'Exports' => $getBox]);
+}
+
+public function getSchoolPays(){
+    $id = auth()->user()->id;
+    if($id == 1 || $id == 2){
+        $pays = SchoolPay::orderBy('created_at','desc')->with('user')->get();
+        return $this->sendResponse($pays->toArray(),'update succesfully');
+
+    }else{
+        $pays = SchoolPay::orderBy('created_at','desc')->where('user_id','=',auth()->user()->id)->get();
+        return $this->sendResponse($pays->toArray(),'update succesfully');
+    }
+}
+
+public function createTakem(Request $request){
+
+    if($request->hasfile('image')){
+        $file = $request->file('image');
+        $extention = $file->getClientOriginalExtension();
+        $filename = time().'.'.$extention;
+        $file->move(public_path('/storage/image_profile/'),$filename);
+        $Url = 'image_profile/'.$filename;
+    }else{
+        $Url = "";
+    }
+
+    $takem = new Takeyem();
+    $takem->name = $request->input('name');
+    $takem->value = $request->input('value');
+    $takem->state = $request->input('state');
+    $takem->image = $Url;
+    $takem->save();
+    return $this->sendResponse($takem->toArray(),'update succesfully');
+
+}
+public function updateTakeym(Request $request , $id){
+    $takem = Takeyem::find($id);
+    if($request->hasfile('image')){
+        $file = $request->file('image');
+        $extention = $file->getClientOriginalExtension();
+        $filename = time().'.'.$extention;
+        $file->move(public_path('/storage/image_profile/'),$filename);
+        $Url = 'image_profile/'.$filename;
+    }else{
+        $Url = "";
+    }
+
+
+    $takem->name = $request->input('name');
+    $takem->value = $request->input('value');
+    $takem->state = $request->input('state');
+    $takem->image = $Url;
+    $takem->save();
+    return $this->sendResponse($takem->toArray(),'update succesfully');
+}
+public function deletedTakem(Request $request){
+    if(str_contains($request->input('ids'),",")){
+        $tId = explode(",",$request->input('ids'));
+        foreach ($tId as $s_id) {
+            $check = Takeyem::find($s_id);
+            $check->delete();
+        }
+        return response()->json(['deleted' => 'succses']);
+
+    }else{
+        $h = Takeyem::find($request->input('ids'));
+        $h->delete();
+        return response()->json(['deleted' => 'succses']);
+
+    }
+   }
+   public function addTakemToStudent($studentID ,$takemID){
+      $tadd = new  TakeyemStudent();
+      $tadd->student_id = $studentID;
+      $tadd->takeyem_id = $takemID;
+      return $this->sendResponse($tadd->toArray(),'update succesfully');
+
+   }
+
+   public function createObgect(Request $request , $classId){
+         $obg = new ObjectClass();
+         $obg->naem = $request->input('name');
+         $obg->marke= $request->input('marke');
+         $obg->samester_id = $classId;
+         $obg->save();
+         return $this->sendResponse($obg->toArray(),'update succesfully');
+   }
+   public function updateObgect(Request $request , $id){
+    $obg = ObjectClass::find($id);
+    $obg->naem = $request->input('name');
+    $obg->marke= $request->input('marke');
+    $obg->save();
+    return $this->sendResponse($obg->toArray(),'update succesfully');
+   }
+public function deletedObg($id){
+   $obg = ObjectClass::find($id);
+   $obg->delete();
+   return response()->json(['deleted' => 'succ']);
+}
+
+public function getObgToClass($id){
+    $clas = Samester::where('id', '=',$id)->with('obg')->get();
+    return $this->sendResponse($clas->toArray(),'update succesfully');
+}
+
+public function createActive(Request $request , $obgId){
+   $markObg =  ObjectClass::where('id' ,'=',$obgId)->get();
+      foreach($markObg as $ma){
+          $mark=  $ma->marke;
+      }
+    $active1 = new  activetyObg();
+    $active1->name = $request->input('name');
+    $active1->object_class_id = $obgId;
+    $active1->marke = $mark;
+    $active1->save();
+    return $this->sendResponse($active1->toArray(),'update succesfully');
+}
+
+public function updateActive(Request $request , $idActive){
+    $active = activetyObg::find($idActive);
+    $active->name = $request->input('name');
+    $active->save();
+    return $this->sendResponse($active->toArray(),'update succesfully');
+}
+
+public function deletedActive($activeId){
+    $activeDeleted = activetyObg::find($activeId);
+    $activeDeleted->delete();
+    return response()->json(['deleted' => 'succes']);
+}
+
+public function getActiveObg($obgId){
+  $obgActives = ObjectClass::where('id','=',$obgId)->with('active')->get();
+  return $this->sendResponse($obgActives->toArray(),'update succesfully');
+
+}
+
+public function countStudentInClass($id){
+$st =  Student::where('samester_id','=',$id)->count();
+return response()->json(['count' => $st]);
+
+}
+
+public function createResultActive(Request $request){
+    $reaulte = new  ResuletActive();
+    $oid = ObjectClass::where('id' , '=',$request->input('object_class_id'))->first();
+    $pers = ($request->input('marke') * 100)/$oid->marke;
+    if($pers > 0 && $pers <=25){
+        $reaulte->persent = 0;
+    }
+    if($pers > 25 && $pers <=60){
+        $reaulte->persent = 1;
+    }
+    if($pers > 60 && $pers <=86){
+        $reaulte->persent = 2;
+    }
+    if($pers > 86 && $pers <=100){
+        $reaulte->persent = 3;
+    }
+    $reaulte->marek =$request->input('marke');
+    $reaulte->student_id =$request->input('student_id');
+    $reaulte->object_class_id =$request->input('object_class_id');
+    $reaulte->activety_obg_id =$request->input('activety_obg_id');
+    $reaulte->date = Carbon::now()->locale("ar_SA")->translatedFormat("'l Y m d");
+    $reaulte->save();
+    return $this->sendResponse($reaulte->toArray(),'create succesfully');
+}
+public function updateResultActive(Request $request , $id){
+    $reaulte = ResuletActive::find($id);
+    $reaulte->marek =$request->input('marke');
+    $reaulte->student_id =$request->input('student_id');
+    $reaulte->object_class_id =$request->input('object_class_id');
+    $reaulte->activety_obg_id =$request->input('activety_obg_id');
+    $reaulte->save();
+    return $this->sendResponse($reaulte->toArray(),'update succesfully');
+}
+public function deletedResultActive($id){
+    $reaulte = ResuletActive::find($id);
+    $reaulte->delete();
+    return response()->json(['deleted' => 'succses']);
+}
+
+public function getResulteStudent($idStudent){
+  $resulteStudent = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$idStudent)->with('obg')->with('active')->get();
+  return $this->sendResponse($resulteStudent->toArray(),'update succesfully');
+
+}
+public function getResulteStudentToAcount($idStudent , $obgId){
+    $resulteStudent = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$idStudent)->where('object_class_id','=',$obgId)->with('obg')->with('active')->get();
+    return $this->sendResponse($resulteStudent->toArray(),'update succesfully');
+  }
+public function web(){
+    return 'hello';
+}
+
+public function avrgeSingelObg($idStudent , $idobg  ){
+  $obgMark = ObjectClass::where('id', '=',$idobg)->first();
+  $cityId = auth()->user()->city_id;
+  $resulteStudent = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$idStudent)->where('object_class_id','=',$idobg)->sum('marek');
+  $count = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$idStudent)->where('object_class_id','=',$idobg)->count();
+   if($count == 0){
+     $avergStudents =0;
+   }else{
+    $avergStudents = $resulteStudent / $count;
+    $avergStudents= round($avergStudents, 0);
+   }
+  $studentsId = Student::orderBy('created_at','desc')->where('city_id','=',$cityId)->where('samester_id','=',$obgMark->samester_id)->get();
+  $countStudent = Student::orderBy('created_at','desc')->where('city_id','=',$cityId)->where('samester_id','=',$obgMark->samester_id)->count();
+  foreach ($studentsId as $order =>$v){
+    $count = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$v->id)->where('object_class_id','=',$idobg)->count();
+    $resulteStudentall = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$v->id)->where('object_class_id','=',$idobg)->sum('marek');
+    $idsStu[$order] =[
+        'avreg'=>$count == 0? 0 :  round(($resulteStudentall/$count),0),
+        'name' => $v->name,
+        'image' => $v->image,
+    ];
+  }
+  $sortedArr =  collect($idsStu)->sortByDesc('avreg')->all();
+  $top5 = array_slice($sortedArr, 0, 5, false);
+  return response()->json(['avreg' => $avergStudents,'top5' => $top5]);
+
+}
+
+public function avergTotal($studentId){
+   $student = Student::where('id','=',$studentId)->first();
+   $obgClass = ObjectClass::where('samester_id','=',$student->samester_id)->get();
+   $totalOneStudent = 0;
+   foreach($obgClass as $obg){
+    $resulteStudent = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$studentId)->where('object_class_id','=',$obg->id)->sum('marek');
+    $count = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$studentId)->where('object_class_id','=',$obg->id)->count();
+    if($count == 0){
+     $avergStudents = 0;
+    }else{
+    $avergStudents = $resulteStudent / $count;
+    $avergStudents= round($avergStudents, 0);
+    $totalOneStudent += $avergStudents;
+    }
+   }
+   $cityId = auth()->user()->city_id;
+   $studentsId = Student::orderBy('created_at','desc')->where('city_id','=',$cityId)->get();
+   foreach($studentsId as $stId=>$v){
+    $id = $v->id;
+    $totalOneStudentall = 0;
+    foreach($obgClass as $obg){
+        $resulteStudent = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$v->id)->where('object_class_id','=',$obg->id)->sum('marek');
+        $count = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$id)->where('object_class_id','=',$obg->id)->count();
+        if($count == 0){
+         $avergStudentsall = 0;
+        }else{
+        $avergStudentsall = $resulteStudent / $count;
+        $avergStudentsall= round($avergStudentsall, 0);
+        $totalOneStudentall += $avergStudentsall;
+        }
+    }
+    $idsStuall[$stId] =[
+        'avregTotal'=>$totalOneStudentall,
+        'name' => $v->name,
+        'image' => $v->image,
+    ];
+   }
+   $sortedArr =  collect($idsStuall)->sortByDesc('avregTotal')->all();
+   $topAll5 = array_slice($sortedArr, 0, 5,false);
+   return response()->json(['avregall' => $totalOneStudent,'top5All' => $topAll5]);
+}
+
+public function cardprint(){
+    $userPrint = User::where('role_id','=',3)->where("city_id",'=',1)->get();
+    return view('cards',compact('userPrint'));
+}
+
+
+
+public function avrgeSingelObgTosemaster($idobg){
+    $obgMark = ObjectClass::where('id', '=',$idobg)->first();
+    $studentsId = Student::orderBy('created_at','desc')->where('samester_id','=',$obgMark->samester_id)->get();
+    $countStudent = Student::orderBy('created_at','desc')->where('samester_id','=',$obgMark->samester_id)->count();
+    foreach ($studentsId as $order =>$v){
+      $count = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$v->id)->where('object_class_id','=',$idobg)->count();
+      $resulteStudentall = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$v->id)->where('object_class_id','=',$idobg)->sum('marek');
+      $idsStu[$order] =[
+          'avreg'=>$count == 0? 0 :  round(($resulteStudentall/$count),0),
+          'name' => $v->name,
+          'image' => $v->image,
+      ];
+    }
+    $sortedArr =  collect($idsStu)->sortByDesc('avreg')->all();
+    $top5 = array_slice($sortedArr, 0, 5, false);
+    return response()->json(['top5' => $top5]);
+
+  }
+
+
+  public function avergTotalTosemster($studentId){
+    $obgClass = ObjectClass::where('samester_id','=',$studentId)->get();
+    $studentsId = Student::orderBy('created_at','desc')->where('samester_id','=',$studentId)->get();
+    foreach($studentsId as $stId=>$v){
+     $id = $v->id;
+     $totalOneStudentall = 0;
+     foreach($obgClass as $obg){
+         $resulteStudent = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$v->id)->where('object_class_id','=',$obg->id)->sum('marek');
+         $count = ResuletActive::orderBy('created_at','desc')->where('student_id','=',$id)->where('object_class_id','=',$obg->id)->count();
+         if($count == 0){
+          $avergStudentsall = 0;
+         }else{
+         $avergStudentsall = $resulteStudent / $count;
+         $avergStudentsall= round($avergStudentsall, 0);
+         $totalOneStudentall += $avergStudentsall;
+         }
+     }
+     $idsStuall[$stId] =[
+         'avregTotal'=>$totalOneStudentall,
+         'name' => $v->name,
+         'image' => $v->image,
+     ];
+    }
+    $sortedArr =  collect($idsStuall)->sortByDesc('avregTotal')->all();
+    $topAll5 = array_slice($sortedArr, 0, 5,false);
+    return response()->json(['top5All' => $topAll5]);
+ }
+
+ public function  lats20pays(){
+   $pay20 = pay::orderBy('id','desc')->with('user')->get();
+   return response()->json(['pay20' => $pay20]);
+ }
+
+ public function search(Request $request){
+
+    $id = $request->input('id');
+    $userPrint  = User::where('id','=',$id)->get();
+    $co  = User::where('id','=',$id)->count();
+     if($co == 1){
+        return view('cards',compact('userPrint'));
+     }else{
+        return redirect('/web')->with('any', 'اسم المستخدم غير موجود');
+    }
+
+ }
+ public function getpayserror(){
+    $instal_error = instalment::where('instaAfterPearsent','=',0)->with('user')->get();
+    return $instal_error;
+ }
+
+ public function paginateTest(){
+    $users = User::query();
+    $rows = 10;
+    return $users->paginate($rows);
+ }
+ public function imageOptimazation (Request $request){
+    if($request->hasFile('image')){
+        $image =$request->file('image') ;
+        $extention = $image->getClientOriginalExtension();
+        $filename = "Test1".'.'.$extention;
+        $imagOptimazation = Image::make($image);
+        $imagOptimazation->save(public_path('/storage/image_profile/'.$filename),60);
+        // Storage::put('/public/storage/image_profile/' . $filename . $extention, $imagOptimazation->encode());
+        $url = 'image_profile/'.$filename;
+        return "done";
+    }
+    return "not image"
+;
+ }
 }
 

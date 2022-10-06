@@ -15,6 +15,9 @@ class post extends Model
         'user_id',
         'image'
     ];
+ public function postImage(){
+    return $this->hasMany(Image_Post::class, 'post_id');
+ }
  public function user(){
      return $this->belongsTo(User::class,'user_id');
  }

@@ -12,16 +12,23 @@ class Samester extends Model
     use HasFactory;
     protected $fillable = [
         'name',
+        'city_id'
 
     ];
+    public function city(){
+        return $this->belongsTo(City::class,'city_id');
+    }
     public function student(){
         return $this->hasOne(Samester::class,'samester_id');
     }
     public function teacher(){
-        return $this->hasMany(Teacher::class,'teacher_samesters','semester_id','teacher_id','id','id');
+        return $this->belongsToMany(Teacher::class,'teacher_samesters','semester_id','teacher_id','id','id');
     }
     public function homwrk(){
         return $this->hasMany(Homwork::class,'semester_id');
+    }
+    public function obg(){
+        return $this->hasMany(ObjectClass::class,'samester_id');
     }
 
 }

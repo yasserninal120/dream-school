@@ -22,7 +22,8 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
-        'role_id'
+        'role_id',
+        'city_id'
     ];
 
     /**
@@ -33,7 +34,8 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
-        'role_id'
+        'role_id',
+        'city_id'
     ];
     public function getJWTIdentifier()
     {
@@ -60,6 +62,9 @@ class User extends Authenticatable implements JWTSubject
     public function role(){
         return $this->belongsTo(Role::class,'role_id');
     }
+    public function city(){
+        return $this->belongsTo(City::class,'city_id');
+    }
     public function student(){
         return $this->hasMany(Student::class,'user_id');
     }
@@ -79,5 +84,11 @@ class User extends Authenticatable implements JWTSubject
     }
     public function instalment(){
         return $this->hasOne(instalment::class,'user_id');
+    }
+    public function user(){
+        return $this-> hasMany(SchoolPay::class,'user_id');
+    }
+    public function app_tokens(){
+        return $this->hasMany(FCMToken::class);
     }
 }

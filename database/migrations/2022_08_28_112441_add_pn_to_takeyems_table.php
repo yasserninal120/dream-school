@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCitiesTable extends Migration
+class AddPnToTakeyemsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,8 @@ class CreateCitiesTable extends Migration
      */
     public function up()
     {
-        Schema::create('cities', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('takeyems', function (Blueprint $table) {
+            $table->boolean('state')->default(1);
         });
     }
 
@@ -26,6 +25,8 @@ class CreateCitiesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('cities');
+        Schema::table('takeyems', function (Blueprint $table) {
+            //
+        });
     }
 }

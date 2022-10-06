@@ -1,5 +1,7 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Models\Image_Post;
 use App\Models\Role;
 use App\Models\Samester;
 use App\Models\Student;
@@ -7,6 +9,8 @@ use App\Models\Teacher;
 use App\Models\teacherSamester;
 use App\Models\User;
 use Carbon\Carbon;
+use Intervention\Image\ImageManagerStatic as Image;
+
 // use GuzzleHttp\Psr7\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -67,7 +71,6 @@ class PostController extends Controller
         $attrs = $request->validate([
             'body' => 'required|string'
         ]);
-
         if($request->input('image')){
             $image = base64_decode($request->input('image'));
             $png_url = time().".png";
@@ -81,7 +84,26 @@ class PostController extends Controller
             'body' => $attrs['body'],
              'user_id' => auth()->user()->id,
              'image' => $url,
+             'date' => Carbon::now()->locale("ar_SA")->translatedFormat("'l Y m d"),
         ]);
+        $imagUrl =[];
+        if($request->hasFile('images')){
+            foreach( $request->file('images') as $image){
+                $name = $image->getClientOriginalName();
+                $extention = $image->getClientOriginalExtension();
+                $filename = time().$name.'.'.$extention;
+                $imagOptimazation = Image::make($image);
+                $imagOptimazation->save(public_path('/storage/image_post/'.$filename),40);
+                $url2 = 'image_post/'.$filename;
+                 $imaseTabel = new Image_Post();
+                 $imaseTabel->urlImage = $url2;
+                 $imaseTabel->post_id = $post->id;
+                 $imaseTabel->save();
+
+            }
+                return $imagUrl;
+        }
+
         return $this->sendResponse($post->toArray(),'Create succesfully');
     }
 
@@ -129,4 +151,16 @@ class PostController extends Controller
 
     }
 
+    public function indexText(){
+        $posts = post::query()->orderBy('created_at','desc')->with('user','postImage')->withCount('comments','likes')
+        ->with('likes',function($like){
+            return $like->where('user_id',auth()->user()->id)
+            ->select('id','user_id','post_id')->get();
+        });
+        $rows = 5;
+        return $posts->paginate($rows);
+        return $this->sendResponse($posts->toArray(),'Update succesfully');
+    }
+
 }
+
