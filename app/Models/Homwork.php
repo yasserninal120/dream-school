@@ -13,6 +13,9 @@ class Homwork extends Model
         'semester_id',
         'user_id',
     ];
+    public function howImage(){
+        return $this->hasMany(ImageHomework::class, 'homwork_id');
+     }
 
     public function semster(){
         return $this->belongsTo(Samester::class,'semester_id');

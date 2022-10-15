@@ -12,7 +12,6 @@ class Student extends Model
         'user_id',
         'samester_id',
         'city_id'
-
     ];
    public function city(){
        return $this->belongsTo(User::class,'city_id');

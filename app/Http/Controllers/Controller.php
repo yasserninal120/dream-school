@@ -3,7 +3,10 @@ namespace App\Http\Controllers;
 
 use App\Models\activety;
 use App\Models\activetyObg;
+use App\Models\Advice;
 use App\Models\Homwork;
+use App\Models\ImageHomework;
+use App\Models\ImageNote;
 use App\Models\instalment;
 use App\Models\MorningCheckUp;
 use App\Models\Note;
@@ -48,7 +51,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Redis;
 use Mockery\Matcher\Not;
-
+use Illuminate\Support\Str;
 // use App\Http\Controllers\Storage;
 
 class Controller extends BaseController
@@ -155,10 +158,6 @@ class Controller extends BaseController
             return response()->json(['tre' => 'ee'],200);
 
          }
-
-
-
-
         error_log('finished');
         return response() -> json(['user' => $creaetUser],200);
     }
@@ -182,7 +181,6 @@ class Controller extends BaseController
             }
         }catch(JWTException $e){
             return response()->json(['error' => 'could not create token'],503);
-
         }
         // return response() -> json(compact('token'));
         return response() -> json(['token' => $token],200);
@@ -328,7 +326,6 @@ class Controller extends BaseController
                 ]);
              }
         }
-
         $samester->delete();
         return $this->sendResponse($samester->toArray(),'deleted succesfully');
 
@@ -336,7 +333,21 @@ class Controller extends BaseController
 
     public function viewSemesters($cityId){
         if(auth()->user()->role_id == 1){
+            $date = Carbon::now()->locale("ar_SA")->translatedFormat("'l Y m d");
             $semestare = Samester::where('id' , '!=',1)->where('city_id','=',$cityId)->get();
+              foreach($semestare as $s){
+                $ifFindCheck = MorningCheckUp::where('samesterId', '=',$s->id)->where('date' , '=' , $date)->count();
+                // return $ifFindCheck;
+                if($ifFindCheck >= 1){
+                  Samester::where('id','=',$s->id)->update([
+                    'check' => '1'
+                  ]);
+                }else{
+                    Samester::where('id','=',$s->id)->update([
+                        'check' => '0'
+                      ]);
+                }
+              }
             return $this->sendResponse($semestare->toArray(),'read succesfully');
         }
         if(auth()->user()->role_id == 2){
@@ -479,17 +490,6 @@ public function createStudent($userId ,$cityUserId  ,Request $request){
 
          return $this->sendResponse($student->toArray(),'create succesfully');
 
-
-
-
-
-
-
-
-
-
-
-
     return $this->sendResponse($student->toArray(),'create succesfully');
 }
 public function getStudentAcounte($userId){
@@ -513,7 +513,6 @@ public function studentUpdate($id , Request $request ,$imageUpdate){
   $student->image = $url;
   $student->className = $nameClass;
   $student->samester_id = $request->input('sId');
-
   $student->save();
   return $this->sendResponse($student->toArray(),'Update succesfully');
 
@@ -610,12 +609,17 @@ public function getInsta($id){
 ///pays
 
 public function createPay ($id , Request $request){
-
 $pay = pay::create([
      'pay' => $request->input('pay'),
      'user_id' => $id,
      'created_at' => Carbon::now()->format('d/m/Y'),
 ]);
+$user = User::find($id);
+foreach ($user->app_tokens as $app_token) {
+    # code...
+    NotificationController::sendNotification($app_token->token,"تم دفع جزء من القسط وقدره",$request->input('pay')."$");
+
+}
 return $this->sendResponse($pay->toArray(),'create succesfully');
 
 }
@@ -722,7 +726,6 @@ foreach($pays as $p){
 
 }
    return $this->sendResponse($pays->toArray(),'update succesfully');
-
 }
 
 public function takeCheckUp(Request $request){
@@ -731,18 +734,30 @@ public function takeCheckUp(Request $request){
     if(str_contains($request->input('ids'),",")){
         $tId = explode(",",$request->input('ids'));
         foreach ($tId as $s_id) {
+            $st = Student::where('id','=',$s_id)->first();
             $ifFindCheck = MorningCheckUp::where('student_id', '=', $s_id)->where('date' , '=' , $date)->count();
             if($ifFindCheck == 1){
 
             }else{
-                $check =   new MorningCheckUp();
+                $check = new MorningCheckUp();
                 $check->student_id = $s_id;
                 $check->checkUp	 = $request->input('check');
                 $check->date = $date;
                 $check->new = 1;
+                $check->samesterId = $st->samester_id;
                 $check->save();
+                if( $request->input('check') == 1){
+                    $st = "موجود";
+                }else{
+                    $st = "غائب";
+                }
+                $s = Student::where('id','=',$s_id)->with('user')->first();
+                // $user = User::where('id','=',$s->user_id)->get();
+                foreach ( $s->user->app_tokens as $app_token) {
+                    # code...
+                    NotificationController::sendNotification($app_token->token,"التفقد اليومي للطالب.$s->name ",$st);
+                }
             }
-
         }
 
     }else{
@@ -755,6 +770,17 @@ public function takeCheckUp(Request $request){
                 $check->date = $date;
                 $check->new = 1;
                 $check->save();
+                if( $request->input('check') == 1){
+                    $st = "موجود";
+                }else{
+                    $st = "غائب";
+                }
+                $s = Student::where('id','=',$request->input('ids'))->with('user')->first();
+                // $user = User::where('id','=',$s->user_id)->get();
+                foreach ( $s->user->app_tokens as $app_token) {
+                    # code...
+                    NotificationController::sendNotification($app_token->token,"التفقد اليومي للطالب $s->name ",$st);
+                }
             }
 
     }
@@ -807,7 +833,6 @@ public function countStudent($cityId){
 
 }
 
-
 public function addHomWork($smid  , Request $request){
       $id = Auth::user()->id;
       if($request->input('image')){
@@ -818,7 +843,6 @@ public function addHomWork($smid  , Request $request){
     }else{
         $url = "";
     }
-
     if($request->hasfile('aduio')){
             $file = $request->file('aduio');
             $extention = $file->getClientOriginalExtension();
@@ -841,6 +865,21 @@ public function addHomWork($smid  , Request $request){
     $homwork->image = $url;
     $homwork->audio = $audoiUrl;
     $homwork->save();
+    if($request->hasFile('images')){
+        foreach( $request->file('images') as $image){
+            $name = $image->getClientOriginalName();
+            $extention = $image->getClientOriginalExtension();
+            $filename = time().$name.'.'.$extention;
+            $imagOptimazation = Image::make($image);
+            $imagOptimazation->save(public_path('/storage/image_post/'.$filename),30);
+            $url2 = 'image_post/'.$filename;
+             $imaseTabel = new ImageHomework();
+             $imaseTabel->urlImage = $url2;
+             $imaseTabel->homwork_id = $homwork->id;
+             $imaseTabel->save();
+        }
+    }
+
     return $this->sendResponse($homwork->toArray(),'update succesfully');
 
 
@@ -885,10 +924,12 @@ public function gethomwork($sid){
       Homwork::where('date', '!=' ,$daate)->update([
           'new' => 0,
       ]);
-     $homSe = Homwork::orderBy('created_at','desc')->with('semster')->with('user')->whereHas('semster',function($q) use($sid){
+     $homSe = Homwork::query()->orderBy('created_at','desc')->with('semster')->with('user')->with('howImage')->whereHas('semster',function($q) use($sid){
          return $q->where('id', '=', $sid);
-     })->get();
-     return $this->sendResponse($homSe->toArray(),'update succesfully');
+     });
+     $rows = 4;
+     return $homSe->paginate($rows);
+    //  return $this->sendResponse($homSe->paginate($rows)->toArray(),'update succesfully');
     }
 
     public function deleteHom(Request $request){
@@ -918,8 +959,6 @@ public function updatenew(){
       return response()->json(['true' => 'update suc']);
 
 }
-
-
 public function addNote($stid, Request $request){
   $id = Auth::user()->id;
   $d = Carbon::now()->locale("ar_SA")->translatedFormat("l Y m d");
@@ -950,34 +989,53 @@ public function addNote($stid, Request $request){
              $note->audio = $audoiUrl;
              $note->image = $url;
              $note->save();
-
+             if($request->hasFile('images')){
+                foreach( $request->file('images') as $image){
+                    $name = $image->getClientOriginalName();
+                    $extention = $image->getClientOriginalExtension();
+                    $filename = time().$name.'.'.$extention;
+                    $imagOptimazation = Image::make($image);
+                    $imagOptimazation->save(public_path('/storage/image_post/'.$filename),30);
+                    $url2 = 'image_post/'.$filename;
+                     $imaseTabel = new ImageNote();
+                     $imaseTabel->urlImage = $url2;
+                     $imaseTabel->note_id = $note->id;
+                     $imaseTabel->save();
+                }
+            }
+            $s = Student::where('id','=',$stid)->with('user')->first();
+            // $user = User::where('id','=',$s->user_id)->get();
+            foreach ( $s->user->app_tokens as $app_token) {
+                # code...
+                NotificationController::sendNotification($app_token->token,"ملاحظة",$request->input('note'));
+            }
   return $this->sendResponse($note->toArray(),'update succesfully');
 }
 public function addNoteAll(Request $request){
 $id = Auth::user()->id;
  $d = Carbon::now()->locale("ar_SA")->translatedFormat("l Y m d");
 if($request->input('ids') != null){
+    if($request->hasfile('image')){
+        $image =$request->file('image') ;
+        $extention = $image->getClientOriginalExtension();
+        $filename = time().'.'.$extention;
+        $image->move(public_path('/storage/image_profile/'),$filename);
+        $url = 'image_profile/'.$filename;
+    }else{
+        $url = "";
+    }
+    if($request->hasfile('aduio')){
+            $file = $request->file('aduio');
+            $extention = $file->getClientOriginalExtension();
+            $filename = Str::uuid().'.'.$extention;
+            $file->move(public_path('/storage/audio/'),$filename);
+            $audoiUrl = 'audio/'.$filename;
+        }else{
+          $audoiUrl = "";
+        }
     if(str_contains($request->input('ids'),",")){
         $tId = explode(",",$request->input('ids'));
         foreach ($tId as $s_id) {
-            if($request->hasfile('image')){
-                $image =$request->file('image') ;
-                $extention = $image->getClientOriginalExtension();
-                $filename = time().'.'.$extention;
-                $image->move(public_path('/storage/image_profile/'),$filename);
-                $url = 'image_profile/'.$filename;
-            }else{
-                $url = "";
-            }
-            if($request->hasfile('aduio')){
-                    $file = $request->file('aduio');
-                    $extention = $file->getClientOriginalExtension();
-                    $filename = time().'.'.$extention;
-                    $file->move(public_path('/storage/audio/'),$filename);
-                    $audoiUrl = 'audio/'.$filename;
-                }else{
-                    $audoiUrl = "";
-                }
              $note = new Note();
              $note->student_id = $s_id;
              $note->note = $request->input('note');
@@ -987,9 +1045,31 @@ if($request->input('ids') != null){
              $note->image = $url;
              $note->new = 1;
              $note->save();
-
+             if($request->hasFile('images')){
+                foreach( $request->file('images') as $image){
+                    $name = $image->getClientOriginalName();
+                    $extention = $image->getClientOriginalExtension();
+                    $filename = time().$name.'.'.$extention;
+                    $imagOptimazation = Image::make($image);
+                    $imagOptimazation->save(public_path('/storage/image_post/'.$filename),30);
+                    $url2 = 'image_post/'.$filename;
+                     $imaseTabel = new ImageNote();
+                     $imaseTabel->urlImage = $url2;
+                     $imaseTabel->note_id = $note->id;
+                     $imaseTabel->save();
+                }
+            }
         }
     }
+    foreach ($tId as $s_id) {
+        $s = Student::where('id','=',$s_id)->with('user')->first();
+            // $user = User::where('id','=',$s->user_id)->get();
+            foreach ($s->user->app_tokens as $app_token) {
+                # code...
+                NotificationController::sendNotification($app_token->token,"ملاحظة",$request->input('note'));
+            }
+    }
+
     return response()->json(['true' => "create succ"]);
 }
 }
@@ -1047,8 +1127,7 @@ public function getNotes($id){
       Note::where('date', '!=' ,$daate)->update([
           'new' => 0,
       ]);
-
-      $nots = Note::orderBy('created_at','desc')->where('student_id', '=',$id )->with('user')->with('student')->get();
+      $nots = Note::orderBy('created_at','desc')->where('student_id', '=',$id )->with('user')->with('student')->with('images')->get();
       return $this->sendResponse($nots->toArray(),'update succesfully');
 
 }
@@ -1102,8 +1181,6 @@ public function addTeacherTraning(Request $request , $idT){
      return response()->json(['tru' => 'succ']);
 
   }
-
-
   public function createSchoolPay(Request $request){
       $schoolPay = new  SchoolPay();
       $schoolPay->pay = $request->input('pay');
@@ -1133,7 +1210,6 @@ public function addTeacherTraning(Request $request , $idT){
         $h = SchoolPay::find($request->input('ids'));
         $h->delete();
         return response()->json(['deleted' => 'succses']);
-
     }
    }
 
@@ -1360,7 +1436,7 @@ public function avrgeSingelObg($idStudent , $idobg  ){
     ];
   }
   $sortedArr =  collect($idsStu)->sortByDesc('avreg')->all();
-  $top5 = array_slice($sortedArr, 0, 5, false);
+  $top5 = array_slice($sortedArr, 0, 40, false);
   return response()->json(['avreg' => $avergStudents,'top5' => $top5]);
 
 }
@@ -1403,7 +1479,7 @@ public function avergTotal($studentId){
     ];
    }
    $sortedArr =  collect($idsStuall)->sortByDesc('avregTotal')->all();
-   $topAll5 = array_slice($sortedArr, 0, 5,false);
+   $topAll5 = array_slice($sortedArr, 0, 40,false);
    return response()->json(['avregall' => $totalOneStudent,'top5All' => $topAll5]);
 }
 
@@ -1428,11 +1504,10 @@ public function avrgeSingelObgTosemaster($idobg){
       ];
     }
     $sortedArr =  collect($idsStu)->sortByDesc('avreg')->all();
-    $top5 = array_slice($sortedArr, 0, 5, false);
+    $top5 = array_slice($sortedArr, 0, 40, false);
     return response()->json(['top5' => $top5]);
 
   }
-
 
   public function avergTotalTosemster($studentId){
     $obgClass = ObjectClass::where('samester_id','=',$studentId)->get();
@@ -1446,8 +1521,8 @@ public function avrgeSingelObgTosemaster($idobg){
          if($count == 0){
           $avergStudentsall = 0;
          }else{
-         $avergStudentsall = $resulteStudent / $count;
-         $avergStudentsall= round($avergStudentsall, 0);
+         $avergStudentsall = round(($resulteStudent / $count),0);
+         $avergStudentsall= $avergStudentsall;
          $totalOneStudentall += $avergStudentsall;
          }
      }
@@ -1458,7 +1533,7 @@ public function avrgeSingelObgTosemaster($idobg){
      ];
     }
     $sortedArr =  collect($idsStuall)->sortByDesc('avregTotal')->all();
-    $topAll5 = array_slice($sortedArr, 0, 5,false);
+    $topAll5 = array_slice($sortedArr, 0, 40,false);
     return response()->json(['top5All' => $topAll5]);
  }
 
@@ -1500,8 +1575,59 @@ public function avrgeSingelObgTosemaster($idobg){
         $url = 'image_profile/'.$filename;
         return "done";
     }
-    return "not image"
-;
+    return "not image";
  }
+ public function noty (Request $request) {
+    $title = $request->input('tit');
+    $bode= $request->input('body');
+    $userId = $request->input('id');
+    $user = User::find($userId);
+    foreach ($user->app_tokens as $app_token) {
+        # code...
+        $result = NotificationController::sendNotification($app_token->token,$title,$bode);
+        return $result;
+    }
+}
+public function notyAll (Request $request) {
+    $title = $request->input('tit');
+    $bode= $request->input('body');
+    $user = User::where('role_id','=',3)->get();
+    foreach($user as $u){
+        foreach ($u->app_tokens as $app_token) {
+            # code...
+            $result = NotificationController::sendNotification($app_token->token,$title,$bode);
+        }
+    }
+    return $result;
+}
+
+  public function sumOgd($idSamster){
+     $sumObg = ObjectClass::where('samester_id','=',$idSamster)->sum('marke');
+     return response()->json(['sum' => $sumObg]);
+  }
+
+
+  public function createAdvice(Request $request){
+    $user = auth()->user()->id;
+    $advice = $request->input('ad');
+    $ad = new Advice();
+    $ad->advice =  $advice;
+    $ad->user_id = $user;
+    $ad->save();
+    $user = User::where('role_id','=',1)->get();
+    foreach($user as $u){
+        foreach ($u->app_tokens as $app_token) {
+            # code...
+            $result = NotificationController::sendNotification($app_token->token,"نصيحة",$advice);
+        }
+    }
+    return response()->json(['succsess' => $ad]);
+  }
+  public function getAdvice(){
+    $ad = Advice::orderBy('created_at','desc')->with('user')->get();
+
+    return $this->sendResponse($ad->toArray(),'update succesfully');
+
+  }
 }
 

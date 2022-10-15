@@ -71,12 +71,12 @@ class PostController extends Controller
         $attrs = $request->validate([
             'body' => 'required|string'
         ]);
-        if($request->input('image')){
-            $image = base64_decode($request->input('image'));
-            $png_url = time().".png";
-             file_put_contents(public_path('/storage/image_post/').$png_url, $image);
-            $url = 'image_post/'.$png_url;
-
+        if($request->hasFile('image')){
+        $file = $request->file('image');
+        $extention = $file->getClientOriginalExtension();
+        $filename = time().'.'.$extention;
+        $file->move(public_path('/storage/image_post/'),$filename);
+        $url = 'image_post/'.$filename;
         }else{
             $url = null;
         }
@@ -93,7 +93,7 @@ class PostController extends Controller
                 $extention = $image->getClientOriginalExtension();
                 $filename = time().$name.'.'.$extention;
                 $imagOptimazation = Image::make($image);
-                $imagOptimazation->save(public_path('/storage/image_post/'.$filename),40);
+                $imagOptimazation->save(public_path('/storage/image_post/'.$filename),20);
                 $url2 = 'image_post/'.$filename;
                  $imaseTabel = new Image_Post();
                  $imaseTabel->urlImage = $url2;
@@ -101,7 +101,6 @@ class PostController extends Controller
                  $imaseTabel->save();
 
             }
-                return $imagUrl;
         }
 
         return $this->sendResponse($post->toArray(),'Create succesfully');
@@ -110,7 +109,6 @@ class PostController extends Controller
       /// update post
       public function update (Request $request ,$id){
        $post = post::find($id);
-
        if(!$post){
         return response()->json(['error' => 'post not found'],[503]);
        }

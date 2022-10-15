@@ -91,4 +91,8 @@ class User extends Authenticatable implements JWTSubject
     public function app_tokens(){
         return $this->hasMany(FCMToken::class);
     }
+
+    public function advice(){
+        return $this->hasMany(Advice::class,'user_id');
+    }
 }

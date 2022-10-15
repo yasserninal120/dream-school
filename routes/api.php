@@ -149,6 +149,14 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/token/store',[TokenController::class,'store']);
     Route::post('/token/revoke',[TokenController::class,'revoke']);
     Route::post('/resize','App\Http\Controllers\Controller@imageOptimazation');
+    Route::post('/noty','App\Http\Controllers\Controller@noty');
+    Route::post('/notyAll','App\Http\Controllers\Controller@notyAll');
+
+    Route::get('/sumOgd/{id}','App\Http\Controllers\Controller@sumOgd');
+
+    Route::post('/createAdvice','App\Http\Controllers\Controller@createAdvice');
+    Route::get('/getAdvice','App\Http\Controllers\Controller@getAdvice');
+
 });
 
 
